@@ -16,6 +16,7 @@ router.post("/addproduct", verifyTokenAndAdmin, async (req, res) => {
         nama: req.body.nama,
         deskripsi: req.body.deskripsi,
         harga: req.body.harga,
+        img: req.body.img
     });
     try {
         const savedProduct = await newProduct.save();
