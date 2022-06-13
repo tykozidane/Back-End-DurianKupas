@@ -6,7 +6,7 @@ const Restock = require("../models/Restocks");
 const Tarikuang = require("../models/Tarikuang");
 const Toko = require("../models/Toko");
 const {
-  verifyTokenAndAdmin, verifyTokenAndReseller
+  verifyTokenAndAdmin, verifyTokenAndReseller, verifyTokenAndTransaction
 } = require("./verifyToken");
 const {
   countTransactionReseller,
@@ -47,6 +47,16 @@ router.put("/dikirim/:idtransaksi", verifyTokenAndReseller, async (req, res) => 
   }
 });
 
+//Data Restock Reseller
+router.get("/datarestock", verifyTokenAndReseller, async (req, res) => {
+  try {
+      const dataRestock = await Restock.find({id_toko: req.tokonya._id});
+      res.status(200).json(dataRestock);
+  } catch (err) {
+      res.status(500).json(err);
+  }
+});
+
 //Request Restock
 router.post("/restock", verifyTokenAndReseller, async (req, res) => {
   try {
@@ -58,6 +68,16 @@ router.post("/restock", verifyTokenAndReseller, async (req, res) => {
     res.status(200).json(savedRestock);
   } catch (err) {
     res.status(500).json(err);
+  }
+});
+
+//Data Tarik Uang
+router.get("/datatarikuang", verifyTokenAndReseller, async (req, res) => {
+  try {
+      const datatarikuang = await Tarikuang.find({id_toko: req.tokonya._id});
+      res.status(200).json(datatarikuang);
+  } catch (err) {
+      res.status(500).json(err);
   }
 });
 
