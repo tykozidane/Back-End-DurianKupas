@@ -6,6 +6,8 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     phone: { type: String, required:true },
     alamat: { type: Array },
+    tanggallahir: {type: Date, default: " "},
+    jeniskelamin: {type: String, default: " "},
     role: { type: String, default: "user" },
 }, { timestamps: true});
 

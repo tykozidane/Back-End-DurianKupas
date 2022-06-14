@@ -74,6 +74,32 @@ router.get("/datareseller", verifyTokenAndAdmin, async (req, res) => {
     
 });
 
+//Update Toko
+router.put("/updatetoko/:idtoko", verifyTokenAndAdmin, async (req, res) => {
+    try {
+        const updateToko = await Toko.findByIdAndUpdate(
+            req.params.idtoko,
+            {
+                $set: req.body
+            },
+            {new: true}
+        );
+        res.status(200).json(updateToko);
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
+
+//Delete Toko
+router.delete("/deletetoko/:idtoko", verifyTokenAndAdmin, async (req, res) => {
+    try {
+        await Product.findByIdAndDelete(req.params.idtoko);
+        res.status(200).json("Toko Has Been Deleted . . .");
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
+
 //Data Pembeli
 router.get("/datapembeli", verifyTokenAndAdmin, async (req, res) => {
     try {
@@ -83,6 +109,33 @@ router.get("/datapembeli", verifyTokenAndAdmin, async (req, res) => {
         res.status(500).json(err);
     }
 });
+
+//Update Pembeli
+router.put("/updatepembeli/:iduser", verifyTokenAndAdmin, async (req, res) => {
+    try {
+        const updatePembeli = await Toko.findByIdAndUpdate(
+            req.params.iduser,
+            {
+                $set: req.body
+            },
+            {new: true}
+        );
+        res.status(200).json(updatePembeli);
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
+
+//Delete Pembeli
+router.delete("/deletePembeli/:iduser", verifyTokenAndAdmin, async (req, res) => {
+    try {
+        await Product.findByIdAndDelete(req.params.iduser);
+        res.status(200).json("Account Has Been Deleted . . .");
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
+
 
 //Data Restock
 router.get("/datarestock", verifyTokenAndAdmin, async (req, res) => {
