@@ -66,7 +66,7 @@ router.post("/pesan", verifyToken, async (req, res) => {
 //Detail Pesanan
 router.put("/detail/:transaksiId", verifyTokenAndTransaction, filterToko, async (req, res) => {
   try {
-    const updatePayment = await Transaksi.findByIdAndUpdate(
+    const updateDetail = await Transaksi.findByIdAndUpdate(
       req.params.transaksiId,
       {
         id_toko: req.toko._id,
@@ -79,11 +79,21 @@ router.put("/detail/:transaksiId", verifyTokenAndTransaction, filterToko, async 
       },
       { new: true }
     );
-    res.status(200).json(updatePayment);
+    res.status(200).json(updateDetail);
   } catch (err) {
     res.status(500).json(err);
   }
   // res.status(200).json(req.transaksi);
+});
+
+//Delete / Batalkan Pesanan
+router.delete("/deletetransaksi/:transaksiId", verifyTokenAndTransaction, async (req, res) => {
+  try {
+      await Product.findByIdAndDelete(req.params.transaksiId);
+      res.status(200).json("Transaction Has been Deleted");
+  } catch (err) {
+      res.status(500).json(err);
+  }
 });
 
 //Pembayaran
