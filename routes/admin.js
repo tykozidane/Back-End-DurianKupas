@@ -40,7 +40,27 @@ router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
     });
     try {
         const saveToko = await newToko.save();
-        res.status(200).json(saveToko);
+        User.findByIdAndUpdate(
+            req.body.id_user,
+            {
+                role: "reseller"
+            },
+            (err, reseller)=> {
+                if (err) res.status(500).json(err);
+                res.status(200).json({saveToko, reseller});
+            }
+        );
+        
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
+
+//Data Pesanan
+router.get("/datapesanan", verifyTokenAndAdmin, async (req, res) => {
+    try {
+        const datapesanan = await Transaksi.find({status: "Verifikasi Pembayaran" });
+        res.status(200).json(datapesanan);
     } catch (err) {
         res.status(500).json(err);
     }

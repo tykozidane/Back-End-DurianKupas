@@ -4,7 +4,12 @@ const Product = require("../models/Products");
 const Transaksi = require("../models/Transaksi");
 const ReviewAndRating = require("../models/Reviews");
 const Toko = require("../models/Toko");
-const { verifyToken, verifyTokenAndAuthorization, verifyTokenAndTransaction, verifyTokenAndReview } = require("./verifyToken");
+const {
+  verifyToken,
+  verifyTokenAndAuthorization,
+  verifyTokenAndTransaction,
+  verifyTokenAndReview,
+} = require("./verifyToken");
 const { filterToko } = require("./filterToko");
 const req = require("express/lib/request");
 //Testing
@@ -44,23 +49,41 @@ router.put("/update/:userId", verifyTokenAndAuthorization, async (req, res) => {
 });
 
 //Pemesanan
-router.post("/pesan", verifyToken, filterToko, async (req, res) => {
+router.post("/pesan", verifyToken, async (req, res) => {
   try {
     const newTransaksi = new Transaksi({
       id_user: req.user.id,
-      id_toko: req.toko._id,
       pesanan: req.body.pesanan,
-      total: req.body.total,
-      provinsi: req.body.provinsi,
-      kota: req.body.kota,
-      kecamatan: req.body.kecamatan,
-      alamat: req.body.alamat,
+      
     });
     const savedTransaksi = await newTransaksi.save();
     res.status(200).json(savedTransaksi);
   } catch (err) {
     res.status(500).json(err);
   }
+});
+
+//Detail Pesanan
+router.put("/detail/:transaksiId", verifyTokenAndTransaction, filterToko, async (req, res) => {
+  try {
+    const updatePayment = await Transaksi.findByIdAndUpdate(
+      req.params.transaksiId,
+      {
+        id_toko: req.toko._id,
+        total: req.body.total,
+        provinsi: req.body.provinsi,
+        kota: req.body.kota,
+        kecamatan: req.body.kecamatan,
+        alamat: req.body.alamat,
+        status: "Menunggu Pembayaran",
+      },
+      { new: true }
+    );
+    res.status(200).json(updatePayment);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+  // res.status(200).json(req.transaksi);
 });
 
 //Pembayaran
@@ -70,9 +93,9 @@ router.put("/payment/:transaksiId", verifyTokenAndTransaction, async (req, res) 
       req.params.transaksiId,
       {
         buktipembayaran: req.body.buktipembayaran,
-        status: "Verifikasi Pembayaran"
-      }, 
-      { new: true}
+        status: "Verifikasi Pembayaran",
+      },
+      { new: true }
     );
     res.status(200).json(updatePayment);
   } catch (err) {
@@ -84,7 +107,9 @@ router.put("/payment/:transaksiId", verifyTokenAndTransaction, async (req, res) 
 //Info Pesanan User
 router.get("/mytransaction/:userId", verifyTokenAndAuthorization, async (req, res) => {
   try {
-    const transaksiku = await Transaksi.find({id_user: req.params.userId}).sort({createdAt: -1});
+    const transaksiku = await Transaksi.find({ id_user: req.params.userId }).sort({
+      createdAt: -1,
+    });
     res.status(200).json(transaksiku);
   } catch (err) {
     res.status(500).json(err);
