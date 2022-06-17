@@ -45,6 +45,7 @@ router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
             {
                 role: "reseller"
             },
+            { new: true},
             (err, reseller)=> {
                 if (err) res.status(500).json(err);
                 res.status(200).json({saveToko, reseller});
