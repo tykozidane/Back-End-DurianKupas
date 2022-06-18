@@ -9,6 +9,7 @@ const {
   verifyTokenAndAuthorization,
   verifyTokenAndTransaction,
   verifyTokenAndReview,
+  verifyTokenAndPembeli,
 } = require("./verifyToken");
 const { filterToko } = require("./filterToko");
 const req = require("express/lib/request");
@@ -49,20 +50,15 @@ router.put("/update/:userId", verifyTokenAndAuthorization, async (req, res) => {
 });
 
 //Pemesanan
-router.post("/pesan", verifyToken, async (req, res) => {
+router.post("/pesan", verifyTokenAndPembeli, async (req, res) => {
   try {
-    User.findById(req.user.id, (err, pembeli)=>{
-      if (err) res.status(500).json(err);
-      const newTransaksi = new Transaksi({
+    const newTransaksi = new Transaksi({
       id_user: req.user.id,
-      username: pembeli.username,
+      username: req.pembeli.username,
       pesanan: req.body.pesanan,
-      
     });
     const savedTransaksi = await newTransaksi.save();
     res.status(200).json(savedTransaksi);
-    });
-    
   } catch (err) {
     res.status(500).json(err);
   }

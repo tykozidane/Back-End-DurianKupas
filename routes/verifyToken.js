@@ -76,6 +76,15 @@ const verifyTokenAndReseller = async (req, res, next) => {
   });
 };
 
+const verifyTokenAndPembeli = async (req, res, next) => {
+  verifyToken(req, res, () => {
+    User.findById(req.user.id, (err, pembeli) => {
+      if (err) res.status(500).json(err)
+      req.pembeli = pembeli;
+      next();
+    })
+  });
+};
 module.exports = {
   verifyToken,
   verifyTokenAndAuthorization,
@@ -83,4 +92,5 @@ module.exports = {
   verifyTokenAndTransaction,
   verifyTokenAndReview,
   verifyTokenAndReseller,
+  verifyTokenAndPembeli
 };
