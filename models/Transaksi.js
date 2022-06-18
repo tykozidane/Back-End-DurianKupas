@@ -2,6 +2,7 @@ const mongoose = require("mongoose")
 
 const transaksiSchema = new mongoose.Schema({
     id_user: {type: String , required:true},
+    username: {type: String, required: true},
     id_toko: {type: String , default: " "},
     pesanan: { type: Array},
     total: { type: Number, default: 0 },

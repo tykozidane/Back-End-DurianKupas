@@ -51,13 +51,18 @@ router.put("/update/:userId", verifyTokenAndAuthorization, async (req, res) => {
 //Pemesanan
 router.post("/pesan", verifyToken, async (req, res) => {
   try {
-    const newTransaksi = new Transaksi({
+    User.findById(req.user.id, (err, pembeli)=>{
+      if (err) res.status(500).json(err);
+      const newTransaksi = new Transaksi({
       id_user: req.user.id,
+      username: pembeli.username,
       pesanan: req.body.pesanan,
       
     });
     const savedTransaksi = await newTransaksi.save();
     res.status(200).json(savedTransaksi);
+    });
+    
   } catch (err) {
     res.status(500).json(err);
   }
