@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const Transaksi = require("../models/Transaksi");
 const ReviewAndRating = require("../models/Reviews");
+const User = require("../models/Users");
 const Toko = require("../models/Toko");
 const admin = "admin";
 const verifyToken = (req, res, next) => {
