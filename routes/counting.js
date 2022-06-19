@@ -2,7 +2,8 @@ const Toko = require("../models/Toko");
 const User = require("../models/Users");
 const Product = require("../models/Products");
 const Transaksi = require("../models/Transaksi");
-const { verifyTokenAndReseller } = require("./verifyToken");
+const { verifyTokenAndReseller
+} = require("./verifyToken");
 
 const cekTransaksi = async (req, res, next) => {
   const tokoini = req.tokonya;

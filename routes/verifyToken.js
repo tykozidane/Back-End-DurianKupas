@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const Transaksi = require("../models/Transaksi");
+const Tarikuang = require("../models/Tarikuang")
 const ReviewAndRating = require("../models/Reviews");
 const User = require("../models/Users");
 const Toko = require("../models/Toko");

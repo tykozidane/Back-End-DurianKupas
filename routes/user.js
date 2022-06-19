@@ -90,10 +90,10 @@ router.put("/detail/:transaksiId", verifyTokenAndTransaction, filterToko, async 
 //Delete / Batalkan Pesanan
 router.delete("/deletetransaksi/:transaksiId", verifyTokenAndTransaction, async (req, res) => {
   try {
-      await Product.findByIdAndDelete(req.params.transaksiId);
-      res.status(200).json("Transaction Has been Deleted");
+    await Product.findByIdAndDelete(req.params.transaksiId);
+    res.status(200).json("Transaction Has been Deleted");
   } catch (err) {
-      res.status(500).json(err);
+    res.status(500).json(err);
   }
 });
 
@@ -122,6 +122,65 @@ router.get("/mytransaction/:userId", verifyTokenAndAuthorization, async (req, re
       createdAt: -1,
     });
     res.status(200).json(transaksiku);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+//update stok di Toko
+const updatestoknya = async (req, res, next) => {
+  const tokonya = req.tokonya;
+  const arrayproduk = req.produknya;
+  for (let i = 0; i < arrayproduk.length; i++) {
+    var jumlah = 0;
+    for (let j = 0; j < tokonya.stock.length; j++) {
+      if (tokonya.stock[j].product == arrayproduk[i].product) {
+        jumlah = tokonya.stock[j].jumlah - arrayproduk[i].jumlah;
+
+        const update = await Toko.updateOne(
+          { _id: tokonya._id, "stock.product": tokonya.stock[j].product },
+          {
+            $set: { "stock.$.jumlah": jumlah },
+          }
+        );
+        j = tokonya.stock.length;
+      }
+    }
+  }
+  req.arraybaru = arrayproduk;
+  next();
+};
+
+//Transaksi Selesai
+router.put("/transaksiselesai/:transaksiId", verifyTokenAndTransaction, async (req, res) => {
+  try {
+    const transaksiSelesai = await Transaksi.findByIdAndUpdate(
+      req.params.transaksiId,
+      {
+        status: "Selesai",
+      },
+      { new: true }
+    );
+    Toko.findById(transaksiSelesai.id_toko, (err, tokonya) => {
+      if (err) res.status(500).json(err);
+      saldobaru = tokonya.saldo + transaksiSelesai.total;
+      req.tokonya = tokonya;
+      const produknya = transaksiSelesai.pesanan;
+      req.produknya = produknya;
+      updatestoknya(req, res, () => {
+        Toko.findByIdAndUpdate(
+          transaksiSelesai.id_toko,
+          {
+            saldo: saldobaru,
+          },
+          { new: true },
+          (err, tokoupdate) => {
+            if (err) res.status(500).json(err);
+            res.status(200).json({ transaksiSelesai, tokoupdate });
+          }
+        );
+      });
+    });
   } catch (err) {
     res.status(500).json(err);
   }
