@@ -12,6 +12,7 @@ const transaksiSchema = new mongoose.Schema({
     alamat: { type: String, default: " " },
     buktipembayaran: { type: String, default: " "},
     status: { type: String, default: "Menunggu Konfirmasi"},
+    review: {type: Boolean, default: false}
 }, { timestamps: true});
 
 module.exports = mongoose.model("Transaksi", transaksiSchema);
