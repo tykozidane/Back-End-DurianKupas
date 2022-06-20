@@ -31,10 +31,30 @@ const addRegion = async (req, res, next) => {
     if (req.body.kota) {
       // const region = await Region.find({provinsi: req.params.provinsi})
       // if (!region) res.status(200).json("provinsi ga ada");
-      Region.find({ provinsi: req.body.provinsi }, async (err, provinsi) => {
-          if (err) res.status(500).json(err);
-        if (!provinsi.provinsi) {
-        //   res.status(200).json("provinsi ga ada");
+      Region.findOne({ provinsi: req.body.provinsi }, async (err, provinsi) => {
+        if (err) res.status(500).json(err);
+        if (provinsi.provinsi === req.body.provinsi) {
+          const kotanya = provinsi.kota;
+          for (let i = 0; i < kotanya.length; i++) {
+            if (kotanya[i] === req.body.kota) {
+              res.status(500).json("Kota Sudah memiliki Reseller");
+              next();
+            }
+          }
+          const addKota = await Region.findByIdAndUpdate(
+            provinsi._id,
+            {
+              $push: {
+                kota: req.body.kota,
+              },
+            },
+            { new: true }
+          );
+          req.provinsi = addKota;
+          next();
+            
+        } else {
+            res.status(200).json("provinsi ga ada");
           const newProvinsi = new Region({
             provinsi: req.body.provinsi,
             kota: req.body.kota,
@@ -42,23 +62,6 @@ const addRegion = async (req, res, next) => {
           const saveprovinsi = await newProvinsi.save();
           req.provinsi = saveprovinsi;
           next();
-        } else {
-          if (provinsi.kota === req.body.kota) {
-            res.status(500).json("Kota Sudah memiliki Reseller");
-          } else {
-            // res.status(200).json("Kota ga ada");
-            const addKota = await Region.findByIdAndUpdate(
-              provinsi._id,
-              {
-                $push: {
-                  kota: req.body.kota,
-                },
-              },
-              { new: true }
-            );
-            req.provinsi = addKota;
-            next();
-          }
         }
       });
     } else {
@@ -82,7 +85,7 @@ router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
     saldo: 0,
   });
   try {
-    const saveToko = await newToko.save();
+    
     addRegion(req, res, () => {
       User.findByIdAndUpdate(
         req.body.id_user,
@@ -92,7 +95,12 @@ router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
         { new: true },
         (err, reseller) => {
           if (err) res.status(500).json(err);
-          res.status(200).json({ saveToko, reseller });
+          provinsi = req.provinsi;
+          if (provinsi.provinsi === req.body.provinsi){
+              newToko.save();  
+              res.status(200).json({newToko, reseller, provinsi });
+          }
+          
         }
       );
     });
