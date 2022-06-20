@@ -13,6 +13,7 @@ const {
 } = require("./verifyToken");
 const { filterToko } = require("./filterToko");
 const req = require("express/lib/request");
+const Region = require("../models/Region");
 //Testing
 router.get("/", async (req, res) => {
   const products = await Product.find();
@@ -59,6 +60,16 @@ router.post("/pesan", verifyTokenAndPembeli, async (req, res) => {
     });
     const savedTransaksi = await newTransaksi.save();
     res.status(200).json(savedTransaksi);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+//get region
+router.get("/region", async (req, res) => {
+  try {
+    const dataRegion = await Region.find();
+    res.status(200).json(dataRegion);
   } catch (err) {
     res.status(500).json(err);
   }
