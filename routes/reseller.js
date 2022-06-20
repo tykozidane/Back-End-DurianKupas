@@ -25,8 +25,8 @@ router.get("/", countTransactionReseller, async (req, res) => {
 //Data Pesanan
 router.get("/datapesanan", verifyTokenAndReseller, async (req, res) => {
   const tokonya = req.tokonya;
-  const pesananBaru = await Transaksi.find({ id_toko: tokonya._id, status: "Menunggu Pengiriman" });
-  Transaksi.find({ id_toko: tokonya._id, status: "Sudah Dikirim" }, (err, pesananLama) => {
+  const pesananLama = await Transaksi.find({ id_toko: tokonya._id }).nor({status: "Menunggu Pengiriman"});
+  Transaksi.find({ id_toko: tokonya._id, status: "Menunggu Pengiriman" }, (err, pesananBaru) => {
     if (err) res.status(403).json(err);
     res.status(200).json({ pesananBaru, pesananLama });
   });

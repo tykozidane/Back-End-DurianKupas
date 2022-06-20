@@ -7,6 +7,8 @@ const Tarikuang = require("../models/Tarikuang");
 const { verifyTokenAndAdmin } = require("./verifyToken");
 const Transaksi = require("../models/Transaksi");
 const { required } = require("nodemon/lib/config");
+const Region = require("../models/Region");
+// const { addRegion } = require("./filterToko");
 
 //Add Product
 router.post("/addproduct", verifyTokenAndAdmin, async (req, res) => {
@@ -24,6 +26,49 @@ router.post("/addproduct", verifyTokenAndAdmin, async (req, res) => {
   }
 });
 
+const addRegion = async (req, res, next) => {
+  if (req.body.provinsi) {
+    if (req.body.kota) {
+      // const region = await Region.find({provinsi: req.params.provinsi})
+      // if (!region) res.status(200).json("provinsi ga ada");
+      Region.find({ provinsi: req.body.provinsi }, async (err, provinsi) => {
+          if (err) res.status(500).json(err);
+        if (!provinsi.provinsi) {
+        //   res.status(200).json("provinsi ga ada");
+          const newProvinsi = new Region({
+            provinsi: req.body.provinsi,
+            kota: req.body.kota,
+          });
+          const saveprovinsi = await newProvinsi.save();
+          req.provinsi = saveprovinsi;
+          next();
+        } else {
+          if (provinsi.kota === req.body.kota) {
+            res.status(500).json("Kota Sudah memiliki Reseller");
+          } else {
+            // res.status(200).json("Kota ga ada");
+            const addKota = await Region.findByIdAndUpdate(
+              provinsi._id,
+              {
+                $push: {
+                  kota: req.body.kota,
+                },
+              },
+              { new: true }
+            );
+            req.provinsi = addKota;
+            next();
+          }
+        }
+      });
+    } else {
+      res.status(500).json("Dimana data Kotanya?");
+    }
+  } else {
+    res.status(500).json("Dimana data Provinsinya?");
+  }
+};
+
 //Add Toko
 router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
   const newToko = new Toko({
@@ -38,17 +83,19 @@ router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
   });
   try {
     const saveToko = await newToko.save();
-    User.findByIdAndUpdate(
-      req.body.id_user,
-      {
-        role: "reseller",
-      },
-      { new: true },
-      (err, reseller) => {
-        if (err) res.status(500).json(err);
-        res.status(200).json({ saveToko, reseller });
-      }
-    );
+    addRegion(req, res, () => {
+      User.findByIdAndUpdate(
+        req.body.id_user,
+        {
+          role: "reseller",
+        },
+        { new: true },
+        (err, reseller) => {
+          if (err) res.status(500).json(err);
+          res.status(200).json({ saveToko, reseller });
+        }
+      );
+    });
   } catch (err) {
     res.status(500).json(err);
   }
@@ -57,8 +104,11 @@ router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
 //Data Pesanan
 router.get("/datapesanan", verifyTokenAndAdmin, async (req, res) => {
   try {
-    const datapesanan = await Transaksi.find({ status: "Verifikasi Pembayaran" });
-    res.status(200).json(datapesanan);
+    const datapesanan = await Transaksi.find().nor({ status: "Verifikasi Pembayaran" });
+    Transaksi.find({ status: "Verifikasi Pembayaran" }, (err, verifikasi) => {
+      if (err) res.status(500).json(err);
+      res.status(200).json({ datapesanan, verifikasi });
+    });
   } catch (err) {
     res.status(500).json(err);
   }
@@ -182,7 +232,7 @@ const updatestoknya = async (req, res, next) => {
           {
             $set: { "stock.$.jumlah": jumlah },
           }
-        ); 
+        );
         j = tokonya.stock.length;
       }
     }
