@@ -127,6 +127,16 @@ router.get("/mytransaction/:userId", verifyTokenAndAuthorization, async (req, re
   }
 });
 
+//Info satu transaksi
+router.get("/transaksi/:transaksiId", verifyTokenAndTransaction, async (req, res) => {
+  try {
+    const transaksiku = await Transaksi.findById(req.params.transaksiId);
+    res.status(200).json(transaksiku);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 //update stok di Toko
 const updatestoknya = async (req, res, next) => {
   const tokonya = req.tokonya;
@@ -204,8 +214,8 @@ router.post("/rating/:transaksiId", verifyTokenAndReview, async (req, res) => {
       { new: true },
       (err, setelahreview) => {
         if (err) res.status(500).json(err);
-        
-        res.status(200).json({savedRating, setelahreview});
+
+        res.status(200).json({ savedRating, setelahreview });
       }
     );
   } catch (err) {
