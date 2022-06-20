@@ -195,6 +195,7 @@ router.post("/rating/:transaksiId", verifyTokenAndReview, async (req, res) => {
       review: req.body.review,
       rating: req.body.rating,
     });
+    const savedRating = await newRating.save();
     Transaksi.findByIdAndUpdate(
       req.params.transaksiId,
       {
@@ -203,7 +204,7 @@ router.post("/rating/:transaksiId", verifyTokenAndReview, async (req, res) => {
       { new: true },
       (err, setelahreview) => {
         if (err) res.status(500).json(err);
-        const savedRating = await newRating.save();
+        
         res.status(200).json({savedRating, setelahreview});
       }
     );
