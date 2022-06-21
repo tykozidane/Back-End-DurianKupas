@@ -8,19 +8,35 @@ const { verifyTokenAndAdmin } = require("./verifyToken");
 const Transaksi = require("../models/Transaksi");
 const { required } = require("nodemon/lib/config");
 const Region = require("../models/Region");
+const cloudinary = require("../utils/cloudinary");
+const upload = require("../utils/multer");
 // const { addRegion } = require("./filterToko");
 
-//Add Product
-router.post("/addproduct", verifyTokenAndAdmin, async (req, res) => {
-  const newProduct = new Product({
-    nama: req.body.nama,
-    deskripsi: req.body.deskripsi,
-    harga: req.body.harga,
-    img: req.body.img,
-  });
+//Fungsi Upload Image
+const uploadimage = async (req, res, next) => {
   try {
-    const savedProduct = await newProduct.save();
-    res.status(200).json(savedProduct);
+    const result = await cloudinary.uploader.upload(req.file.path);
+    req.imageupload = result;
+    next();
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
+//Add Product
+router.post("/addproduct", verifyTokenAndAdmin, upload.single("image"), async (req, res) => {
+  try {
+    uploadimage(req, res, () => {
+      const link = req.imageupload;
+      const newProduct = new Product({
+        nama: req.body.nama,
+        deskripsi: req.body.deskripsi,
+        harga: req.body.harga,
+        img: link.secure_url,
+      });
+      newProduct.save();
+      res.status(200).json(savedProduct);
+    });
   } catch (err) {
     res.status(500).json(err);
   }
@@ -52,9 +68,8 @@ const addRegion = async (req, res, next) => {
           );
           req.provinsi = addKota;
           next();
-            
         } else {
-            res.status(200).json("provinsi ga ada");
+          res.status(200).json("provinsi ga ada");
           const newProvinsi = new Region({
             provinsi: req.body.provinsi,
             kota: req.body.kota,
@@ -85,7 +100,6 @@ router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
     saldo: 0,
   });
   try {
-    
     addRegion(req, res, () => {
       User.findByIdAndUpdate(
         req.body.id_user,
@@ -96,11 +110,10 @@ router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
         (err, reseller) => {
           if (err) res.status(500).json(err);
           provinsi = req.provinsi;
-          if (provinsi.provinsi === req.body.provinsi){
-              newToko.save();  
-              res.status(200).json({newToko, reseller, provinsi });
+          if (provinsi.provinsi === req.body.provinsi) {
+            newToko.save();
+            res.status(200).json({ newToko, reseller, provinsi });
           }
-          
         }
       );
     });
@@ -289,46 +302,57 @@ router.get("/datatarikuang", verifyTokenAndAdmin, async (req, res) => {
 
 //Get satu data tarik uang
 router.get("/datatarikuang/:tarikuangId", verifyTokenAndAdmin, async (req, res) => {
-    try {
-        const dataTarikUang = await Tarikuang.findById(req.params.tarikuangId);
-        res.status(200).json(dataTarikUang);
-    } catch (err) {
-        res.status(500).json(err);
-    }
-});
-
-//Bukti Transfer Uang Reseller
-router.put("/transfer/:idtarikuang", verifyTokenAndAdmin, async (req, res) => {
   try {
-    const updateTarikuang = await Tarikuang.findByIdAndUpdate(
-      req.params.idtarikuang,
-      {
-        tanggal: Date.now(),
-        bukti: req.body.bukti,
-        status: "Berhasil",
-      },
-      { new: true }
-    );
-    var saldobaru = 0;
-    Toko.findById(updateTarikuang.id_toko, (err, tokonya) => {
-      if (err) res.status(500).json(err);
-      saldobaru = tokonya.saldo - updateTarikuang.jumlah;
-      Toko.findByIdAndUpdate(
-        updateTarikuang.id_toko,
-        {
-          saldo: saldobaru,
-        },
-        { new: true },
-        (err, tokoupdate) => {
-          if (err) res.status(500).json(err);
-          res.status(200).json({ updateTarikuang, tokoupdate });
-        }
-      );
-    });
+    const dataTarikUang = await Tarikuang.findById(req.params.tarikuangId);
+    res.status(200).json(dataTarikUang);
   } catch (err) {
     res.status(500).json(err);
   }
 });
+
+//Bukti Transfer Uang Reseller
+router.put(
+  "/transfer/:idtarikuang",
+  verifyTokenAndAdmin,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      uploadimage(req, res, () => {
+        const link = req.imageupload;
+        Tarikuang.findByIdAndUpdate(
+          req.params.idtarikuang,
+          {
+            tanggal: Date.now(),
+            bukti: link.secure_url,
+            status: "Berhasil",
+          },
+          { new: true },
+          (err, updateTarikuang) => {
+            if (err) res.status(500).json(err);
+            var saldobaru = 0;
+            Toko.findById(updateTarikuang.id_toko, (err, tokonya) => {
+              if (err) res.status(500).json(err);
+              saldobaru = tokonya.saldo - updateTarikuang.jumlah;
+              Toko.findByIdAndUpdate(
+                updateTarikuang.id_toko,
+                {
+                  saldo: saldobaru,
+                },
+                { new: true },
+                (err, tokoupdate) => {
+                  if (err) res.status(500).json(err);
+                  res.status(200).json({ updateTarikuang, tokoupdate });
+                }
+              );
+            });
+          }
+        );
+      });
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  }
+);
 
 //Data Product
 router.get("/dataproduct", verifyTokenAndAdmin, async (req, res) => {
@@ -342,13 +366,13 @@ router.get("/dataproduct", verifyTokenAndAdmin, async (req, res) => {
 
 //Data Product by ID
 router.get("/dataproduct/:productId", verifyTokenAndAdmin, async (req, res) => {
-    try {
-      const product = await Product.findById(req.params.productId);
-      res.status(200).json(product);
-    } catch (err) {
-      res.status(500).json(err);
-    }
-  });
+  try {
+    const product = await Product.findById(req.params.productId);
+    res.status(200).json(product);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 
 //Update Product
 router.put("/updateproduct/:idproduct", verifyTokenAndAdmin, async (req, res) => {

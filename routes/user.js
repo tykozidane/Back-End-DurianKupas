@@ -133,29 +133,33 @@ router.delete("/deletetransaksi/:transaksiId", verifyTokenAndTransaction, async 
 });
 
 //Pembayaran
-router.put("/payment/:transaksiId", verifyTokenAndTransaction, upload.single("image"), async (req, res) => {
-  try {
-    uploadimage(req, res, () => {
-      const link = req.imageupload;
-      Transaksi.findByIdAndUpdate(
-        req.params.transaksiId,
-        {
-          buktipembayaran: link.secure_url,
-          status: "Verifikasi Pembayaran",
-        },
-        { new: true },
-        (err, updatePayment) => {
-          if (err) res.status(500).json(err)
-          res.status(200).json(updatePayment);
-        }
-      );
-      
-    });
-  } catch (err) {
-    res.status(500).json(err);
+router.put(
+  "/payment/:transaksiId",
+  verifyTokenAndTransaction,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      uploadimage(req, res, () => {
+        const link = req.imageupload;
+        Transaksi.findByIdAndUpdate(
+          req.params.transaksiId,
+          {
+            buktipembayaran: link.secure_url,
+            status: "Verifikasi Pembayaran",
+          },
+          { new: true },
+          (err, updatePayment) => {
+            if (err) res.status(500).json(err);
+            res.status(200).json(updatePayment);
+          }
+        );
+      });
+    } catch (err) {
+      res.status(500).json(err);
+    }
+    // res.status(200).json(req.transaksi);
   }
-  // res.status(200).json(req.transaksi);
-});
+);
 
 //Info Pesanan User
 router.get("/mytransaction/:userId", verifyTokenAndAuthorization, async (req, res) => {
