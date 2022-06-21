@@ -14,11 +14,35 @@ const {
 const { filterToko } = require("./filterToko");
 const req = require("express/lib/request");
 const Region = require("../models/Region");
+const cloudinary = require("../utils/cloudinary");
+const upload = require("../utils/multer");
 //Testing
 router.get("/", async (req, res) => {
   const products = await Product.find();
   res.status(200).json(products);
 });
+
+router.post("/", upload.single("image"), async (req, res) => {
+  try {
+    uploadimage(req, res, () => {
+      const link = req.imageupload;
+      res.status(200).json(link);
+    });
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+//Fungsi Upload Image
+const uploadimage = async (req, res, next) => {
+  try {
+    const result = await cloudinary.uploader.upload(req.file.path);
+    req.imageupload = result;
+    next();
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
 
 //profile
 router.get("/profile/:userId", verifyTokenAndAuthorization, async (req, res) => {
@@ -109,17 +133,24 @@ router.delete("/deletetransaksi/:transaksiId", verifyTokenAndTransaction, async 
 });
 
 //Pembayaran
-router.put("/payment/:transaksiId", verifyTokenAndTransaction, async (req, res) => {
+router.put("/payment/:transaksiId", verifyTokenAndTransaction, upload.single("image"), async (req, res) => {
   try {
-    const updatePayment = await Transaksi.findByIdAndUpdate(
-      req.params.transaksiId,
-      {
-        buktipembayaran: req.body.buktipembayaran,
-        status: "Verifikasi Pembayaran",
-      },
-      { new: true }
-    );
-    res.status(200).json(updatePayment);
+    uploadimage(req, res, () => {
+      const link = req.imageupload;
+      Transaksi.findByIdAndUpdate(
+        req.params.transaksiId,
+        {
+          buktipembayaran: link.secure_url,
+          status: "Verifikasi Pembayaran",
+        },
+        { new: true },
+        (err, updatePayment) => {
+          if (err) res.status(500).json(err)
+          res.status(200).json(updatePayment);
+        }
+      );
+      
+    });
   } catch (err) {
     res.status(500).json(err);
   }

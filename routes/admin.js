@@ -287,6 +287,16 @@ router.get("/datatarikuang", verifyTokenAndAdmin, async (req, res) => {
   }
 });
 
+//Get satu data tarik uang
+router.get("/datatarikuang/:tarikuangId", verifyTokenAndAdmin, async (req, res) => {
+    try {
+        const dataTarikUang = await Tarikuang.findById(req.params.tarikuangId);
+        res.status(200).json(dataTarikUang);
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
+
 //Bukti Transfer Uang Reseller
 router.put("/transfer/:idtarikuang", verifyTokenAndAdmin, async (req, res) => {
   try {
@@ -329,6 +339,16 @@ router.get("/dataproduct", verifyTokenAndAdmin, async (req, res) => {
     res.status(500).json(err);
   }
 });
+
+//Data Product by ID
+router.get("/dataproduct/:productId", verifyTokenAndAdmin, async (req, res) => {
+    try {
+      const product = await Product.findById(req.params.productId);
+      res.status(200).json(product);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  });
 
 //Update Product
 router.put("/updateproduct/:idproduct", verifyTokenAndAdmin, async (req, res) => {
