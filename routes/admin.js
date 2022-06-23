@@ -27,6 +27,8 @@ const uploadimage = async (req, res, next) => {
 //Add Product
 router.post("/addproduct", verifyTokenAndAdmin, upload.single("image"), async (req, res) => {
   try {
+    const allproduct = await Product.findOne({nama: req.body.nama});
+    if (!allproduct) res.status(500).json("Produk ini sudah ada di Database");
     uploadimage(req, res, () => {
       const link = req.imageupload;
       const newProduct = new Product({
@@ -36,7 +38,7 @@ router.post("/addproduct", verifyTokenAndAdmin, upload.single("image"), async (r
         img: link.secure_url,
       });
       newProduct.save();
-      res.status(200).json(savedProduct);
+      res.status(200).json(newProduct);
     });
   } catch (err) {
     res.status(500).json(err);
