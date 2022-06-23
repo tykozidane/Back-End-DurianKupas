@@ -25,7 +25,9 @@ router.get("/", countTransactionReseller, async (req, res) => {
 //Data Pesanan
 router.get("/datapesanan", verifyTokenAndReseller, async (req, res) => {
   const tokonya = req.tokonya;
-  const pesananLama = await Transaksi.find({ id_toko: tokonya._id }).nor({status: "Menunggu Pengiriman"});
+  const pesananLama = await Transaksi.find({ id_toko: tokonya._id }).nor({
+    status: "Menunggu Pengiriman",
+  });
   Transaksi.find({ id_toko: tokonya._id, status: "Menunggu Pengiriman" }, (err, pesananBaru) => {
     if (err) res.status(403).json(err);
     res.status(200).json({ pesananBaru, pesananLama });
@@ -85,12 +87,16 @@ router.get("/datatarikuang", verifyTokenAndReseller, async (req, res) => {
 //Request Tarik Uang
 router.post("/tarikuang", verifyTokenAndReseller, async (req, res) => {
   try {
-    const newTarikuang = new Tarikuang({
-      id_toko: req.tokonya._id,
-      jumlah: req.body.jumlah,
-    });
-    const savedTarikuang = await newTarikuang.save();
-    res.status(200).json(savedTarikuang);
+    if (req.tokonya.saldo < req.body.jumlah) {
+      res.status(200).json("Saldo Anda Kurang dari jumlah Permintaan!!!");
+    } else {
+      const newTarikuang = new Tarikuang({
+        id_toko: req.tokonya._id,
+        jumlah: req.body.jumlah,
+      });
+      const savedTarikuang = await newTarikuang.save();
+      res.status(200).json(savedTarikuang);
+    }
   } catch (err) {
     res.status(500).json(err);
   }
