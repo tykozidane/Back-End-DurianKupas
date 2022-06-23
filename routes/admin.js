@@ -396,7 +396,8 @@ router.put("/updateproduct/:idproduct", verifyTokenAndAdmin, async (req, res) =>
 //Delete Product
 router.delete("/deleteproduct/:idproduct", verifyTokenAndAdmin, async (req, res) => {
   try {
-    await Product.findByIdAndDelete(req.params.idproduct);
+    // await Product.findByIdAndDelete(req.params.idproduct);
+    await Product.deleteOne({_id: req.params.idproduct});
     res.status(200).json("Product Has Been Deleted . . .");
   } catch (err) {
     res.status(500).json(err);
