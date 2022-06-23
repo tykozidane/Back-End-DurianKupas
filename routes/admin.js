@@ -185,7 +185,20 @@ router.put("/updatetoko/:idtoko", verifyTokenAndAdmin, async (req, res) => {
 //Delete Toko
 router.delete("/deletetoko/:idtoko", verifyTokenAndAdmin, async (req, res) => {
   try {
-    await Product.findByIdAndDelete(req.params.idtoko);
+    const tokonya = await Toko.findById(req.params.idtoko);
+    await Toko.findByIdAndDelete(req.params.idtoko);
+    await Region.findOneAndUpdate({provinsi: tokonya.provinsi},
+      {
+        $pull : {
+          kota: tokonya.kota,
+        }
+      })
+    await User.findByIdAndUpdate(
+      tokonya.id_user,
+      {
+        role: "user"
+      }, {new: true}
+    )
     res.status(200).json("Toko Has Been Deleted . . .");
   } catch (err) {
     res.status(500).json(err);
@@ -221,7 +234,7 @@ router.put("/updatepembeli/:iduser", verifyTokenAndAdmin, async (req, res) => {
 //Delete Pembeli
 router.delete("/deletePembeli/:iduser", verifyTokenAndAdmin, async (req, res) => {
   try {
-    await Product.findByIdAndDelete(req.params.iduser);
+    await User.findByIdAndDelete(req.params.iduser);
     res.status(200).json("Account Has Been Deleted . . .");
   } catch (err) {
     res.status(500).json(err);
