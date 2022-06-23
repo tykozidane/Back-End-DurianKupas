@@ -15,6 +15,7 @@ const upload = require("../utils/multer");
 //Fungsi Upload Image
 const uploadimage = async (req, res, next) => {
   try {
+    if (!req.file) res.status(500).json("File Kosong");
     const result = await cloudinary.uploader.upload(req.file.path);
     req.imageupload = result;
     next();

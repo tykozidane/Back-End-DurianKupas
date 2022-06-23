@@ -62,6 +62,7 @@ router.get("/datarestock", verifyTokenAndReseller, async (req, res) => {
 
 //Request Restock
 router.post("/restock", verifyTokenAndReseller, async (req, res) => {
+  if (!req.body.product) res.status(500).json("Product apa saja yang ingin di restock?");
   try {
     const newRequest = new Restock({
       id_toko: req.tokonya._id,
@@ -86,6 +87,7 @@ router.get("/datatarikuang", verifyTokenAndReseller, async (req, res) => {
 
 //Request Tarik Uang
 router.post("/tarikuang", verifyTokenAndReseller, async (req, res) => {
+  if (!req.body.jumlah) res.status(500).json("Berapa jumlah yang ingin ditarik?");
   try {
     if (req.tokonya.saldo < req.body.jumlah) {
       res.status(200).json("Saldo Anda Kurang dari jumlah Permintaan!!!");

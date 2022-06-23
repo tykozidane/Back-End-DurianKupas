@@ -36,6 +36,7 @@ router.post("/", upload.single("image"), async (req, res) => {
 //Fungsi Upload Image
 const uploadimage = async (req, res, next) => {
   try {
+    if (!req.file) res.status(500).json("File Kosong");
     const result = await cloudinary.uploader.upload(req.file.path);
     req.imageupload = result;
     next();
@@ -76,6 +77,7 @@ router.put("/update/:userId", verifyTokenAndAuthorization, async (req, res) => {
 
 //Pemesanan
 router.post("/pesan", verifyTokenAndPembeli, async (req, res) => {
+  if (!req.body.pesanan) res.status(500).json("Produknya Apa Saja Nih?");
   try {
     const newTransaksi = new Transaksi({
       id_user: req.user.id,
@@ -101,6 +103,11 @@ router.get("/region", async (req, res) => {
 
 //Detail Pesanan
 router.put("/detail/:transaksiId", verifyTokenAndTransaction, filterToko, async (req, res) => {
+  if (!req.body.total) res.status(500).json("Totalnya Berapa Del");
+  if (!req.body.provinsi) res.status(500).json("Provinsi Belum Diisi !!!");
+  if (!req.body.kota) res.status(500).json("Kota Belum Diisi!!!");
+  if (!req.body.kecamatan) res.status(500).json("Kecamatan Belum Diisi !!!");
+  if (!req.body.alamat) res.status(500).json("Detail Alamatnya Belum Diisi !!!");
   try {
     const updateDetail = await Transaksi.findByIdAndUpdate(
       req.params.transaksiId,
@@ -138,9 +145,11 @@ router.put(
   verifyTokenAndTransaction,
   upload.single("image"),
   async (req, res) => {
+    // if (!req.body.image) res.status(500).json("Foto Bukti Belum Dikirim");
     try {
       uploadimage(req, res, () => {
         const link = req.imageupload;
+        if (!req.imageupload) res.status(500).json("Foto Bukti Belum Dikirim");
         Transaksi.findByIdAndUpdate(
           req.params.transaksiId,
           {
@@ -244,6 +253,8 @@ router.put("/transaksiselesai/:transaksiId", verifyTokenAndTransaction, async (r
 
 //Review And Rating
 router.post("/rating/:transaksiId", verifyTokenAndReview, async (req, res) => {
+  if (!req.review) res.status(500).json("Reviewnya belum diisi!");
+  if (!req.rating) res.status(500).json("Ratingnya belum diisi!");
   try {
     const newRating = new ReviewAndRating({
       id_transaksi: req.params.transaksiId,
