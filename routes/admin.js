@@ -106,7 +106,7 @@ router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
   try {
     addRegion(req, res, () => {
       User.findByIdAndUpdate(
-        req.body.id_user,
+        usernya._id,
         {
           role: "reseller",
         },
