@@ -154,6 +154,22 @@ router.put("/pembayaranterverifikasi/:idtransaksi", verifyTokenAndAdmin, async (
   }
 });
 
+//Pembayaran ditolak
+router.put("/pembayaranditolak/:idtransaksi", verifyTokenAndAdmin, async (req, res) => {
+  try {
+    const updateTransaksi = await Transaksi.findByIdAndUpdate(
+      req.params.idtransaksi,
+      {
+        status: "Pembayaran Ditolak",
+      },
+      { new: true }
+    );
+    res.status(200).json(updateTransaksi);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 //Data Reseller
 router.get("/datareseller", verifyTokenAndAdmin, async (req, res) => {
   const semuatoko = await Toko.find();
@@ -245,7 +261,7 @@ router.delete("/deletePembeli/:iduser", verifyTokenAndAdmin, async (req, res) =>
 router.get("/datarestock", verifyTokenAndAdmin, async (req, res) => {
   try {
     const dataRestock = await Restock.find({ status: "Pending" });
-    Restock.find({ status: "Dikirim" }, (err, doneRestock) => {
+    Restock.find({ status: "Dikirim" }).sort({createdAt:-1}).exec((err, doneRestock) => {
       if (err) res.status(500).json(err);
       res.status(200).json({ dataRestock, doneRestock });
     });
