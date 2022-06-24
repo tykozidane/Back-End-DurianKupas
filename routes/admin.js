@@ -92,9 +92,10 @@ const addRegion = async (req, res, next) => {
 
 //Add Toko
 router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
+  const usernya = await User.findOne({username: req.body.username});
   const newToko = new Toko({
     namatoko: req.body.namatoko,
-    id_user: req.body.id_user,
+    id_user: usernya._id,
     email: req.body.email,
     phone: req.body.phone,
     provinsi: req.body.provinsi,
@@ -224,7 +225,7 @@ router.delete("/deletetoko/:idtoko", verifyTokenAndAdmin, async (req, res) => {
 //Data Pembeli
 router.get("/datapembeli", verifyTokenAndAdmin, async (req, res) => {
   try {
-    const datapembeli = await User.find({ role: "user" });
+    const datapembeli = await User.find({ role: "user" }).sort({createdAt:-1});
     res.status(200).json(datapembeli);
   } catch (err) {
     res.status(500).json(err);
