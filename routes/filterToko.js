@@ -16,7 +16,7 @@ const Region = require("../models/Region");
 //         next();
 //       } else {
 //         if (provinsi.kota === req.body.kota){
-//           res.status(500).json("Kota Sudah memiliki Reseller");
+//           return res.status(500).json("Kota Sudah memiliki Reseller");
 //         }
 //         const addKota = await Region.findByIdAndUpdate(
 //           provinsi._id,
@@ -30,10 +30,10 @@ const Region = require("../models/Region");
 //       }
 //     });
 //     } else {
-//       res.status(500).json("Dimana data Kotanya?");
+//       return res.status(500).json("Dimana data Kotanya?");
 //     }
 //   } else {
-//     res.status(500).json("Dimana data Provinsinya?");
+//     return res.status(500).json("Dimana data Provinsinya?");
 //   }
 // };
 
@@ -44,7 +44,7 @@ const filterToko = async (req, res, next) => {
     req.toko = dapetToko;
     next();
   } else {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 };
 

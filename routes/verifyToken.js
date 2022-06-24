@@ -10,7 +10,7 @@ const verifyToken = (req, res, next) => {
   if (authHeader) {
     const token = authHeader.split(" ")[1];
     jwt.verify(token, process.env.JWT_SEC, (err, user) => {
-      if (err) res.status(403).json("Token Is Not Valid !!!");
+      if (err) return res.status(403).json("Token Is Not Valid !!!");
       req.user = user;
       next();
     });
@@ -23,7 +23,7 @@ const verifyTokenAndAuthorization = (req, res, next) => {
     if (req.user.id === req.params.userId || req.user.role === admin) {
       next();
     } else {
-      res.status(403).json("You are not alowed to do that!");
+      return res.status(403).json("You are not alowed to do that!");
     }
   });
 };
@@ -33,7 +33,7 @@ const verifyTokenAndAdmin = (req, res, next) => {
     if (req.user.role === admin) {
       next();
     } else {
-      res.status(403).json("You Are Not Admin!");
+      return res.status(403).json("You Are Not Admin!");
     }
   });
 };
@@ -45,20 +45,20 @@ const verifyTokenAndTransaction = async (req, res, next) => {
       req.transaksi = transaksi;
       next();
     } else {
-      res.status(403).json("You are not alowed to do that!");
+      return res.status(403).json("You are not alowed to do that!");
     }
   });
 };
 
 const verifyTokenAndReview = async (req, res, next) => {
   ReviewAndRating.find({ id_transaksi: req.params.transaksiId }, (err, adaReview) => {
-    if (err) res.status(403).json(err);
+    if (err) return res.status(403).json(err);
     req.review = adaReview;
     verifyTokenAndTransaction(req, res, () => {
       if (req.review.length === 0) {
         next();
       } else {
-        res.status(200).json("Anda Sudah Memberikan Review Atas Transaksi Ini, Terimakasih");
+        return res.status(200).json("Anda Sudah Memberikan Review Atas Transaksi Ini, Terimakasih");
       }
     });
   });
@@ -68,12 +68,12 @@ const verifyTokenAndReseller = async (req, res, next) => {
   verifyToken(req, res, () => {
     if(req.user.role === "reseller") {
       Toko.findOne({id_user: req.user.id}, (err, tokonya) => {
-      if (err) res.status(403).json(err);
+      if (err) return res.status(403).json(err);
       req.tokonya = tokonya;
       next();
       });
     } else {
-      res.status(500).json("Anda bukan Reseller");
+      return res.status(500).json("Anda bukan Reseller");
     }
   });
 };
@@ -81,7 +81,7 @@ const verifyTokenAndReseller = async (req, res, next) => {
 const verifyTokenAndPembeli = async (req, res, next) => {
   verifyToken(req, res, () => {
     User.findById(req.user.id, (err, pembeli) => {
-      if (err) res.status(500).json(err)
+      if (err) return res.status(500).json(err)
       req.pembeli = pembeli;
       next();
     })

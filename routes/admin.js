@@ -15,12 +15,12 @@ const upload = require("../utils/multer");
 //Fungsi Upload Image
 const uploadimage = async (req, res, next) => {
   try {
-    if (!req.file) res.status(500).json("File Kosong");
+    if (!req.file) return res.status(500).json("File Kosong");
     const result = await cloudinary.uploader.upload(req.file.path);
     req.imageupload = result;
     next();
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 };
 
@@ -28,7 +28,7 @@ const uploadimage = async (req, res, next) => {
 router.post("/addproduct", verifyTokenAndAdmin, upload.single("image"), async (req, res) => {
   try {
     const allproduct = await Product.findOne({nama: req.body.nama});
-    if (!allproduct) res.status(500).json("Produk ini sudah ada di Database");
+    if (!allproduct) return res.status(500).json("Produk ini sudah ada di Database");
     uploadimage(req, res, () => {
       const link = req.imageupload;
       const newProduct = new Product({
@@ -38,10 +38,10 @@ router.post("/addproduct", verifyTokenAndAdmin, upload.single("image"), async (r
         img: link.secure_url,
       });
       newProduct.save();
-      res.status(200).json(newProduct);
+      return res.status(200).json(newProduct);
     });
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -49,14 +49,14 @@ const addRegion = async (req, res, next) => {
   if (req.body.provinsi) {
     if (req.body.kota) {
       // const region = await Region.find({provinsi: req.params.provinsi})
-      // if (!region) res.status(200).json("provinsi ga ada");
+      // if (!region) return res.status(200).json("provinsi ga ada");
       Region.findOne({ provinsi: req.body.provinsi }, async (err, provinsi) => {
-        if (err) res.status(500).json(err);
+        if (err) return res.status(500).json(err);
         if (provinsi.provinsi === req.body.provinsi) {
           const kotanya = provinsi.kota;
           for (let i = 0; i < kotanya.length; i++) {
             if (kotanya[i] === req.body.kota) {
-              res.status(500).json("Kota Sudah memiliki Reseller");
+              return res.status(500).json("Kota Sudah memiliki Reseller");
               next();
             }
           }
@@ -72,7 +72,7 @@ const addRegion = async (req, res, next) => {
           req.provinsi = addKota;
           next();
         } else {
-          res.status(200).json("provinsi ga ada");
+          return res.status(200).json("provinsi ga ada");
           const newProvinsi = new Region({
             provinsi: req.body.provinsi,
             kota: req.body.kota,
@@ -83,10 +83,10 @@ const addRegion = async (req, res, next) => {
         }
       });
     } else {
-      res.status(500).json("Dimana data Kotanya?");
+      return res.status(500).json("Dimana data Kotanya?");
     }
   } else {
-    res.status(500).json("Dimana data Provinsinya?");
+    return res.status(500).json("Dimana data Provinsinya?");
   }
 };
 
@@ -112,17 +112,17 @@ router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
         },
         { new: true },
         (err, reseller) => {
-          if (err) res.status(500).json(err);
+          if (err) return res.status(500).json(err);
           provinsi = req.provinsi;
           if (provinsi.provinsi === req.body.provinsi) {
             newToko.save();
-            res.status(200).json({ newToko, reseller, provinsi });
+            return res.status(200).json({ newToko, reseller, provinsi });
           }
         }
       );
     });
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -131,11 +131,11 @@ router.get("/datapesanan", verifyTokenAndAdmin, async (req, res) => {
   try {
     const datapesanan = await Transaksi.find().nor({ status: "Verifikasi Pembayaran" });
     Transaksi.find({ status: "Verifikasi Pembayaran" }, (err, verifikasi) => {
-      if (err) res.status(500).json(err);
-      res.status(200).json({ datapesanan, verifikasi });
+      if (err) return res.status(500).json(err);
+      return res.status(200).json({ datapesanan, verifikasi });
     });
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -149,9 +149,9 @@ router.put("/pembayaranterverifikasi/:idtransaksi", verifyTokenAndAdmin, async (
       },
       { new: true }
     );
-    res.status(200).json(updateTransaksi);
+    return res.status(200).json(updateTransaksi);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -165,9 +165,9 @@ router.put("/pembayaranditolak/:idtransaksi", verifyTokenAndAdmin, async (req, r
       },
       { new: true }
     );
-    res.status(200).json(updateTransaksi);
+    return res.status(200).json(updateTransaksi);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -176,9 +176,9 @@ router.get("/datareseller", verifyTokenAndAdmin, async (req, res) => {
   const semuatoko = await Toko.find();
   User.find({ role: "reseller" }, (err, reseller) => {
     if (err) {
-      res.status(500).json(err);
+      return res.status(500).json(err);
     } else {
-      res.status(200).json({ semuatoko, reseller });
+      return res.status(200).json({ semuatoko, reseller });
     }
   });
 });
@@ -193,9 +193,9 @@ router.put("/updatetoko/:idtoko", verifyTokenAndAdmin, async (req, res) => {
       },
       { new: true }
     );
-    res.status(200).json(updateToko);
+    return res.status(200).json(updateToko);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -216,9 +216,9 @@ router.delete("/deletetoko/:idtoko", verifyTokenAndAdmin, async (req, res) => {
         role: "user"
       }, {new: true}
     )
-    res.status(200).json("Toko Has Been Deleted . . .");
+    return res.status(200).json("Toko Has Been Deleted . . .");
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -226,9 +226,9 @@ router.delete("/deletetoko/:idtoko", verifyTokenAndAdmin, async (req, res) => {
 router.get("/datapembeli", verifyTokenAndAdmin, async (req, res) => {
   try {
     const datapembeli = await User.find({ role: "user" }).sort({createdAt:-1});
-    res.status(200).json(datapembeli);
+    return res.status(200).json(datapembeli);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -242,9 +242,9 @@ router.put("/updatepembeli/:iduser", verifyTokenAndAdmin, async (req, res) => {
       },
       { new: true }
     );
-    res.status(200).json(updatePembeli);
+    return res.status(200).json(updatePembeli);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -252,9 +252,9 @@ router.put("/updatepembeli/:iduser", verifyTokenAndAdmin, async (req, res) => {
 router.delete("/deletePembeli/:iduser", verifyTokenAndAdmin, async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.iduser);
-    res.status(200).json("Account Has Been Deleted . . .");
+    return res.status(200).json("Account Has Been Deleted . . .");
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -263,11 +263,11 @@ router.get("/datarestock", verifyTokenAndAdmin, async (req, res) => {
   try {
     const dataRestock = await Restock.find({ status: "Pending" });
     Restock.find({ status: "Dikirim" }).sort({createdAt:-1}).exec((err, doneRestock) => {
-      if (err) res.status(500).json(err);
-      res.status(200).json({ dataRestock, doneRestock });
+      if (err) return res.status(500).json(err);
+      return res.status(200).json({ dataRestock, doneRestock });
     });
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -309,14 +309,14 @@ router.put("/restockdikirim/:idrestock", verifyTokenAndAdmin, async (req, res) =
     const produknya = updateRestock.product;
     req.produknya = produknya;
     Toko.findById(updateRestock.id_toko, (err, tokonya) => {
-      if (err) res.status(500).json(err);
+      if (err) return res.status(500).json(err);
       req.tokonya = tokonya;
       updatestoknya(req, res, () => {
-        res.status(200).json(updateRestock);
+        return res.status(200).json(updateRestock);
       });
     });
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -325,11 +325,11 @@ router.get("/datatarikuang", verifyTokenAndAdmin, async (req, res) => {
   try {
     const datatarikuang = await Tarikuang.find({ status: "Pending" });
     Tarikuang.find({ status: "Berhasil" }, (err, donetarikuang) => {
-      if (err) res.status(500).json(err);
-      res.status(200).json({ datatarikuang, donetarikuang });
+      if (err) return res.status(500).json(err);
+      return res.status(200).json({ datatarikuang, donetarikuang });
     });
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -337,9 +337,9 @@ router.get("/datatarikuang", verifyTokenAndAdmin, async (req, res) => {
 router.get("/datatarikuang/:tarikuangId", verifyTokenAndAdmin, async (req, res) => {
   try {
     const dataTarikUang = await Tarikuang.findById(req.params.tarikuangId);
-    res.status(200).json(dataTarikUang);
+    return res.status(200).json(dataTarikUang);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -361,10 +361,10 @@ router.put(
           },
           { new: true },
           (err, updateTarikuang) => {
-            if (err) res.status(500).json(err);
+            if (err) return res.status(500).json(err);
             var saldobaru = 0;
             Toko.findById(updateTarikuang.id_toko, (err, tokonya) => {
-              if (err) res.status(500).json(err);
+              if (err) return res.status(500).json(err);
               saldobaru = tokonya.saldo - updateTarikuang.jumlah;
               Toko.findByIdAndUpdate(
                 updateTarikuang.id_toko,
@@ -373,8 +373,8 @@ router.put(
                 },
                 { new: true },
                 (err, tokoupdate) => {
-                  if (err) res.status(500).json(err);
-                  res.status(200).json({ updateTarikuang, tokoupdate });
+                  if (err) return res.status(500).json(err);
+                  return res.status(200).json({ updateTarikuang, tokoupdate });
                 }
               );
             });
@@ -382,7 +382,7 @@ router.put(
         );
       });
     } catch (err) {
-      res.status(500).json(err);
+      return res.status(500).json(err);
     }
   }
 );
@@ -391,9 +391,9 @@ router.put(
 router.get("/dataproduct", verifyTokenAndAdmin, async (req, res) => {
   try {
     const product = await Product.find();
-    res.status(200).json(product);
+    return res.status(200).json(product);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -401,9 +401,9 @@ router.get("/dataproduct", verifyTokenAndAdmin, async (req, res) => {
 router.get("/dataproduct/:productId", verifyTokenAndAdmin, async (req, res) => {
   try {
     const product = await Product.findById(req.params.productId);
-    res.status(200).json(product);
+    return res.status(200).json(product);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -417,9 +417,9 @@ router.put("/updateproduct/:idproduct", verifyTokenAndAdmin, async (req, res) =>
       },
       { new: true }
     );
-    res.status(200).json(updateProduct);
+    return res.status(200).json(updateProduct);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -428,9 +428,9 @@ router.delete("/deleteproduct/:idproduct", verifyTokenAndAdmin, async (req, res)
   try {
     // await Product.findByIdAndDelete(req.params.idproduct);
     await Product.deleteOne({_id: req.params.idproduct});
-    res.status(200).json("Product Has Been Deleted . . .");
+    return res.status(200).json("Product Has Been Deleted . . .");
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 

@@ -19,29 +19,29 @@ const upload = require("../utils/multer");
 //Testing
 router.get("/", async (req, res) => {
   const products = await Product.find();
-  res.status(200).json(products);
+  return res.status(200).json(products);
 });
 
 router.post("/", upload.single("image"), async (req, res) => {
   try {
     uploadimage(req, res, () => {
       const link = req.imageupload;
-      res.status(200).json(link);
+      return res.status(200).json(link);
     });
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
 //Fungsi Upload Image
 const uploadimage = async (req, res, next) => {
   try {
-    if (!req.file) res.status(500).json("File Kosong");
+    if (!req.file) return res.status(500).json("File Kosong");
     const result = await cloudinary.uploader.upload(req.file.path);
     req.imageupload = result;
     next();
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 };
 
@@ -50,9 +50,9 @@ router.get("/profile/:userId", verifyTokenAndAuthorization, async (req, res) => 
   try {
     const user = await User.findById(req.params.userId);
     const { password, ...others } = user._doc;
-    res.status(200).json(others);
+    return res.status(200).json(others);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -69,15 +69,15 @@ router.put("/update/:userId", verifyTokenAndAuthorization, async (req, res) => {
       },
       { new: true }
     );
-    res.status(200).json(updateUser);
+    return res.status(200).json(updateUser);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
 //Pemesanan
 router.post("/pesan", verifyTokenAndPembeli, async (req, res) => {
-  if (!req.body.pesanan) res.status(500).json("Produknya Apa Saja Nih?");
+  if (!req.body.pesanan) return res.status(500).json("Produknya Apa Saja Nih?");
   try {
     const newTransaksi = new Transaksi({
       id_user: req.user.id,
@@ -85,9 +85,9 @@ router.post("/pesan", verifyTokenAndPembeli, async (req, res) => {
       pesanan: req.body.pesanan,
     });
     const savedTransaksi = await newTransaksi.save();
-    res.status(200).json(savedTransaksi);
+    return res.status(200).json(savedTransaksi);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -95,19 +95,19 @@ router.post("/pesan", verifyTokenAndPembeli, async (req, res) => {
 router.get("/region", async (req, res) => {
   try {
     const dataRegion = await Region.find();
-    res.status(200).json(dataRegion);
+    return res.status(200).json(dataRegion);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
 //Detail Pesanan
 router.put("/detail/:transaksiId", verifyTokenAndTransaction, filterToko, async (req, res) => {
-  if (!req.body.total) res.status(500).json("Totalnya Berapa Del");
-  if (!req.body.provinsi) res.status(500).json("Provinsi Belum Diisi !!!");
-  if (!req.body.kota) res.status(500).json("Kota Belum Diisi!!!");
-  if (!req.body.kecamatan) res.status(500).json("Kecamatan Belum Diisi !!!");
-  if (!req.body.alamat) res.status(500).json("Detail Alamatnya Belum Diisi !!!");
+  if (!req.body.total) return res.status(500).json("Totalnya Berapa Del");
+  if (!req.body.provinsi) return res.status(500).json("Provinsi Belum Diisi !!!");
+  if (!req.body.kota) return res.status(500).json("Kota Belum Diisi!!!");
+  if (!req.body.kecamatan) return res.status(500).json("Kecamatan Belum Diisi !!!");
+  if (!req.body.alamat) return res.status(500).json("Detail Alamatnya Belum Diisi !!!");
   try {
     const updateDetail = await Transaksi.findByIdAndUpdate(
       req.params.transaksiId,
@@ -122,20 +122,20 @@ router.put("/detail/:transaksiId", verifyTokenAndTransaction, filterToko, async 
       },
       { new: true }
     );
-    res.status(200).json(updateDetail);
+    return res.status(200).json(updateDetail);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
-  // res.status(200).json(req.transaksi);
+  // return res.status(200).json(req.transaksi);
 });
 
 //Delete / Batalkan Pesanan
 router.delete("/deletetransaksi/:transaksiId", verifyTokenAndTransaction, async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.transaksiId);
-    res.status(200).json("Transaction Has been Deleted");
+    return res.status(200).json("Transaction Has been Deleted");
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -145,11 +145,11 @@ router.put(
   verifyTokenAndTransaction,
   upload.single("image"),
   async (req, res) => {
-    // if (!req.body.image) res.status(500).json("Foto Bukti Belum Dikirim");
+    // if (!req.body.image) return res.status(500).json("Foto Bukti Belum Dikirim");
     try {
       uploadimage(req, res, () => {
         const link = req.imageupload;
-        if (!req.imageupload) res.status(500).json("Foto Bukti Belum Dikirim");
+        if (!req.imageupload) return res.status(500).json("Foto Bukti Belum Dikirim");
         Transaksi.findByIdAndUpdate(
           req.params.transaksiId,
           {
@@ -158,15 +158,15 @@ router.put(
           },
           { new: true },
           (err, updatePayment) => {
-            if (err) res.status(500).json(err);
-            res.status(200).json(updatePayment);
+            if (err) return res.status(500).json(err);
+            return res.status(200).json(updatePayment);
           }
         );
       });
     } catch (err) {
-      res.status(500).json(err);
+      return res.status(500).json(err);
     }
-    // res.status(200).json(req.transaksi);
+    // return res.status(200).json(req.transaksi);
   }
 );
 
@@ -176,9 +176,9 @@ router.get("/mytransaction/:userId", verifyTokenAndAuthorization, async (req, re
     const transaksiku = await Transaksi.find({ id_user: req.params.userId }).sort({
       createdAt: -1,
     });
-    res.status(200).json(transaksiku);
+    return res.status(200).json(transaksiku);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -186,9 +186,9 @@ router.get("/mytransaction/:userId", verifyTokenAndAuthorization, async (req, re
 router.get("/transaksi/:transaksiId", verifyTokenAndTransaction, async (req, res) => {
   try {
     const transaksiku = await Transaksi.findById(req.params.transaksiId);
-    res.status(200).json(transaksiku);
+    return res.status(200).json(transaksiku);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -227,7 +227,7 @@ router.put("/transaksiselesai/:transaksiId", verifyTokenAndTransaction, async (r
       { new: true }
     );
     Toko.findById(transaksiSelesai.id_toko, (err, tokonya) => {
-      if (err) res.status(500).json(err);
+      if (err) return res.status(500).json(err);
       saldobaru = tokonya.saldo + transaksiSelesai.total;
       req.tokonya = tokonya;
       const produknya = transaksiSelesai.pesanan;
@@ -240,21 +240,21 @@ router.put("/transaksiselesai/:transaksiId", verifyTokenAndTransaction, async (r
           },
           { new: true },
           (err, tokoupdate) => {
-            if (err) res.status(500).json(err);
-            res.status(200).json({ transaksiSelesai, tokoupdate });
+            if (err) return res.status(500).json(err);
+            return res.status(200).json({ transaksiSelesai, tokoupdate });
           }
         );
       });
     });
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
 //Review And Rating
 router.post("/rating/:transaksiId", verifyTokenAndReview, async (req, res) => {
-  if (!req.review) res.status(500).json("Reviewnya belum diisi!");
-  if (!req.rating) res.status(500).json("Ratingnya belum diisi!");
+  if (!req.review) return res.status(500).json("Reviewnya belum diisi!");
+  if (!req.rating) return res.status(500).json("Ratingnya belum diisi!");
   try {
     const newRating = new ReviewAndRating({
       id_transaksi: req.params.transaksiId,
@@ -270,13 +270,13 @@ router.post("/rating/:transaksiId", verifyTokenAndReview, async (req, res) => {
       },
       { new: true },
       (err, setelahreview) => {
-        if (err) res.status(500).json(err);
+        if (err) return res.status(500).json(err);
 
-        res.status(200).json({ savedRating, setelahreview });
+        return res.status(200).json({ savedRating, setelahreview });
       }
     );
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 

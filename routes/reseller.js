@@ -19,7 +19,7 @@ router.get("/", countTransactionReseller, async (req, res) => {
   const tokonya = req.tokonya;
   const reseller = await User.findById(req.user.id);
   // const transaksi = await Transaksi.find({id_transaksi: tokonya._id});
-  res.status(200).json({ reseller, totalTransaksi, pendapatan, tokonya });
+  return res.status(200).json({ reseller, totalTransaksi, pendapatan, tokonya });
 });
 
 //Data Pesanan
@@ -29,8 +29,8 @@ router.get("/datapesanan", verifyTokenAndReseller, async (req, res) => {
     status: "Menunggu Pengiriman",
   });
   Transaksi.find({ id_toko: tokonya._id, status: "Menunggu Pengiriman" }, (err, pesananBaru) => {
-    if (err) res.status(403).json(err);
-    res.status(200).json({ pesananBaru, pesananLama });
+    if (err) return res.status(403).json(err);
+    return res.status(200).json({ pesananBaru, pesananLama });
   });
 });
 
@@ -44,9 +44,9 @@ router.put("/dikirim/:idtransaksi", verifyTokenAndReseller, async (req, res) => 
       },
       { new: true }
     );
-    res.status(200).json(updateTransaksi);
+    return res.status(200).json(updateTransaksi);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -54,24 +54,24 @@ router.put("/dikirim/:idtransaksi", verifyTokenAndReseller, async (req, res) => 
 router.get("/datarestock", verifyTokenAndReseller, async (req, res) => {
   try {
     const dataRestock = await Restock.find({ id_toko: req.tokonya._id });
-    res.status(200).json(dataRestock);
+    return res.status(200).json(dataRestock);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
 //Request Restock
 router.post("/restock", verifyTokenAndReseller, async (req, res) => {
-  if (!req.body.product) res.status(500).json("Product apa saja yang ingin di restock?");
+  if (!req.body.product) return res.status(500).json("Product apa saja yang ingin di restock?");
   try {
     const newRequest = new Restock({
       id_toko: req.tokonya._id,
       product: req.body.product,
     });
     const savedRestock = await newRequest.save();
-    res.status(200).json(savedRestock);
+    return res.status(200).json(savedRestock);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -79,28 +79,28 @@ router.post("/restock", verifyTokenAndReseller, async (req, res) => {
 router.get("/datatarikuang", verifyTokenAndReseller, async (req, res) => {
   try {
     const datatarikuang = await Tarikuang.find({ id_toko: req.tokonya._id });
-    res.status(200).json(datatarikuang);
+    return res.status(200).json(datatarikuang);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
 //Request Tarik Uang
 router.post("/tarikuang", verifyTokenAndReseller, async (req, res) => {
-  if (!req.body.jumlah) res.status(500).json("Berapa jumlah yang ingin ditarik?");
+  if (!req.body.jumlah) return res.status(500).json("Berapa jumlah yang ingin ditarik?");
   try {
     if (req.tokonya.saldo < req.body.jumlah) {
-      res.status(200).json("Saldo Anda Kurang dari jumlah Permintaan!!!");
+      return res.status(200).json("Saldo Anda Kurang dari jumlah Permintaan!!!");
     } else {
       const newTarikuang = new Tarikuang({
         id_toko: req.tokonya._id,
         jumlah: req.body.jumlah,
       });
       const savedTarikuang = await newTarikuang.save();
-      res.status(200).json(savedTarikuang);
+      return res.status(200).json(savedTarikuang);
     }
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 

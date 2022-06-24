@@ -20,7 +20,7 @@ const cekTransaksi = async (req, res, next) => {
 const countTransactionReseller = (req, res, next) => {
   verifyTokenAndReseller(req, res, () => {
     Toko.findOne({ id_user: req.user.id }, (err, tokonya) => {
-      if (err) res.status(403).json(err);
+      if (err) return res.status(403).json(err);
       req.tokonya = tokonya;
       cekTransaksi(req, res, () => {
         next();
