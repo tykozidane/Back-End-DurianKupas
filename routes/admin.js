@@ -27,8 +27,8 @@ const uploadimage = async (req, res, next) => {
 //Add Product
 router.post("/addproduct", verifyTokenAndAdmin, upload.single("image"), async (req, res) => {
   try {
-    const allproduct = await Product.findOne({nama: req.body.nama});
-    if (!allproduct) return res.status(500).json("Produk ini sudah ada di Database");
+    const allproduct = await Product.findOne({ nama: req.body.nama });
+    if (allproduct) return res.status(500).json("Produk ini sudah ada di Database");
     uploadimage(req, res, () => {
       const link = req.imageupload;
       const newProduct = new Product({
@@ -92,7 +92,7 @@ const addRegion = async (req, res, next) => {
 
 //Add Toko
 router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
-  const usernya = await User.findOne({username: req.body.username});
+  const usernya = await User.findOne({ username: req.body.username });
   const newToko = new Toko({
     namatoko: req.body.namatoko,
     id_user: usernya._id,
@@ -204,18 +204,21 @@ router.delete("/deletetoko/:idtoko", verifyTokenAndAdmin, async (req, res) => {
   try {
     const tokonya = await Toko.findById(req.params.idtoko);
     await Toko.findByIdAndDelete(req.params.idtoko);
-    await Region.findOneAndUpdate({provinsi: tokonya.provinsi},
+    await Region.findOneAndUpdate(
+      { provinsi: tokonya.provinsi },
       {
-        $pull : {
+        $pull: {
           kota: tokonya.kota,
-        }
-      })
+        },
+      }
+    );
     await User.findByIdAndUpdate(
       tokonya.id_user,
       {
-        role: "user"
-      }, {new: true}
-    )
+        role: "user",
+      },
+      { new: true }
+    );
     return res.status(200).json("Toko Has Been Deleted . . .");
   } catch (err) {
     return res.status(500).json(err);
@@ -225,7 +228,7 @@ router.delete("/deletetoko/:idtoko", verifyTokenAndAdmin, async (req, res) => {
 //Data Pembeli
 router.get("/datapembeli", verifyTokenAndAdmin, async (req, res) => {
   try {
-    const datapembeli = await User.find({ role: "user" }).sort({createdAt:-1});
+    const datapembeli = await User.find({ role: "user" }).sort({ createdAt: -1 });
     return res.status(200).json(datapembeli);
   } catch (err) {
     return res.status(500).json(err);
@@ -262,10 +265,12 @@ router.delete("/deletePembeli/:iduser", verifyTokenAndAdmin, async (req, res) =>
 router.get("/datarestock", verifyTokenAndAdmin, async (req, res) => {
   try {
     const dataRestock = await Restock.find({ status: "Pending" });
-    Restock.find({ status: "Dikirim" }).sort({createdAt:-1}).exec((err, doneRestock) => {
-      if (err) return res.status(500).json(err);
-      return res.status(200).json({ dataRestock, doneRestock });
-    });
+    Restock.find({ status: "Dikirim" })
+      .sort({ createdAt: -1 })
+      .exec((err, doneRestock) => {
+        if (err) return res.status(500).json(err);
+        return res.status(200).json({ dataRestock, doneRestock });
+      });
   } catch (err) {
     return res.status(500).json(err);
   }
@@ -427,7 +432,7 @@ router.put("/updateproduct/:idproduct", verifyTokenAndAdmin, async (req, res) =>
 router.delete("/deleteproduct/:idproduct", verifyTokenAndAdmin, async (req, res) => {
   try {
     // await Product.findByIdAndDelete(req.params.idproduct);
-    await Product.deleteOne({_id: req.params.idproduct});
+    await Product.deleteOne({ _id: req.params.idproduct });
     return res.status(200).json("Product Has Been Deleted . . .");
   } catch (err) {
     return res.status(500).json(err);
