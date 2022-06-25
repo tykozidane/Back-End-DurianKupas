@@ -52,12 +52,11 @@ const addRegion = async (req, res, next) => {
       // if (!region) return res.status(200).json("provinsi ga ada");
       Region.findOne({ provinsi: req.body.provinsi }, async (err, provinsi) => {
         if (err) return res.status(500).json(err);
-        if (provinsi.provinsi === req.body.provinsi) {
+        if (provinsi) {
           const kotanya = provinsi.kota;
           for (let i = 0; i < kotanya.length; i++) {
             if (kotanya[i] === req.body.kota) {
               return res.status(500).json("Kota Sudah memiliki Reseller");
-              next();
             }
           }
           const addKota = await Region.findByIdAndUpdate(
@@ -72,7 +71,7 @@ const addRegion = async (req, res, next) => {
           req.provinsi = addKota;
           next();
         } else {
-          return res.status(200).json("provinsi ga ada");
+          // return res.status(200).json("provinsi ga ada");
           const newProvinsi = new Region({
             provinsi: req.body.provinsi,
             kota: req.body.kota,
