@@ -254,7 +254,6 @@ router.put("/transaksiselesai/:transaksiId", verifyTokenAndTransaction, async (r
 //Review And Rating
 router.post("/rating/:transaksiId", verifyTokenAndReview, async (req, res) => {
   if (!req.review) return res.status(500).json("Reviewnya belum diisi!");
-  if (isNaN(req.rating)) return res.status(500).json("Ratingnya belum diisi!");
   try {
     const newRating = new ReviewAndRating({
       id_transaksi: req.params.transaksiId,
