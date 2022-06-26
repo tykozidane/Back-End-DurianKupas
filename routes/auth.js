@@ -51,13 +51,11 @@ router.post("/login", async (req, res) => {
   if (!req.body.password) return res.status(500).json("Password Harus Di Isi !!!");
   try {
     const user = await User.findOne({ username: req.body.username });
-    !user && res.status(401).json("Username Tidak Terdaftar!!!");
+    if(!user) return res.status(401).json("Username Tidak Terdaftar!!!");
 
     const hashedPassword = CryptoJS.AES.decrypt(user.password, process.env.PASS_SEC);
     const OriginalPassword = hashedPassword.toString(CryptoJS.enc.Utf8);
-
-    OriginalPassword !== req.body.password && res.status(401).json("Wrong credentials!");
-
+    if (OriginalPassword !== req.body.password) return res.status(401).json("Wrong credentials!");
     const accessToken = jwt.sign(
       {
         id: user._id,
