@@ -96,8 +96,8 @@ router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
   const newToko = new Toko({
     namatoko: req.body.namatoko,
     id_user: usernya._id,
-    email: req.body.email,
-    phone: req.body.phone,
+    email: usernya.email,
+    phone: usernya.phone,
     provinsi: req.body.provinsi,
     kota: req.body.kota,
     stock: req.body.stock,
