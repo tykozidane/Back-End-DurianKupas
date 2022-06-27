@@ -39,7 +39,8 @@ router.post("/register", async (req, res) => {
       process.env.JWT_SEC,
       { expiresIn: "1d" }
     );
-    return res.status(201).json({ savedUser, accessToken });
+    const { password, ...others } = savedUser._doc;
+    return res.status(200).json({ ...others, accessToken });
   } catch (err) {
     return res.status(500).json(err);
   }
