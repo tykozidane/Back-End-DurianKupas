@@ -188,7 +188,6 @@ router.get("/datareseller/:tokoId", verifyTokenAndAdmin, async (req, res) => {
   const tokonya = await Toko.findById(req.params.tokoId);
   const resellernya = await User.findById(tokonya.id_user);
   return res.status(200).json({ tokonya, resellernya });
-  
 });
 
 //Update Toko
@@ -212,14 +211,17 @@ router.delete("/deletetoko/:idtoko", verifyTokenAndAdmin, async (req, res) => {
   try {
     const tokonya = await Toko.findById(req.params.idtoko);
     await Toko.findByIdAndDelete(req.params.idtoko);
-    await Region.findOneAndUpdate(
+    const region = await Region.findOneAndUpdate(
       { provinsi: tokonya.provinsi },
       {
         $pull: {
           kota: tokonya.kota,
         },
-      }
+      }, { new: true}
     );
+    if (region.kota.length === 0) {
+      await Region.findByIdAndDelete(region._id);
+    }
     await User.findByIdAndUpdate(
       tokonya.id_user,
       {
@@ -246,7 +248,9 @@ router.get("/datapembeli", verifyTokenAndAdmin, async (req, res) => {
 ////Data Satu Pembeli
 router.get("/datapembeli/:userId", verifyTokenAndAdmin, async (req, res) => {
   try {
-    const datapembeli = await User.find({ _id: req.params.userId, role: "user" }).sort({ createdAt: -1 });
+    const datapembeli = await User.find({ _id: req.params.userId, role: "user" }).sort({
+      createdAt: -1,
+    });
     return res.status(200).json(datapembeli);
   } catch (err) {
     return res.status(500).json(err);
@@ -431,25 +435,41 @@ router.get("/dataproduct/:productId", verifyTokenAndAdmin, async (req, res) => {
 });
 
 //Update Product
-router.put("/updateproduct/:idproduct", verifyTokenAndAdmin, async (req, res) => {
-  const image = require("image");
-  if (image.existsSync(path)) { return res.status(200).json("ga ada gambar")
-} else {
-  return res.status(200).json("gambar ada")
-}
-  try {
-    const updateProduct = await Product.findByIdAndUpdate(
-      req.params.idproduct,
-      {
-        $set: req.body,
-      },
-      { new: true }
-    );
-    return res.status(200).json(updateProduct);
-  } catch (err) {
-    return res.status(500).json(err);
+router.put(
+  "/updateproduct/:idproduct",
+  verifyTokenAndAdmin,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      if (req.file) {
+        uploadimage(req, res, () => {
+          const link = req.imageupload;
+          req.body.img = link.secure_url;
+          Product.findByIdAndUpdate(
+            req.params.idproduct,
+            {
+              img: link.secure_url,
+            },
+            { new: true }
+          ).exec((err, imgproduct) => {
+            if (err) return res.status(500).json(err);
+            req.imgproduct = imgproduct;
+          });
+        });
+      }
+      const updateProduct = await Product.findByIdAndUpdate(
+        req.params.idproduct,
+        {
+          $set: req.body,
+        },
+        { new: true }
+      );
+      return res.status(200).json(updateProduct);
+    } catch (err) {
+      return res.status(500).json(err);
+    }
   }
-});
+);
 
 //Delete Product
 router.delete("/deleteproduct/:idproduct", verifyTokenAndAdmin, async (req, res) => {
