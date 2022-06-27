@@ -258,7 +258,7 @@ router.get("/datapembeli/:userId", verifyTokenAndAdmin, async (req, res) => {
 //Update Pembeli
 router.put("/updatepembeli/:iduser", verifyTokenAndAdmin, async (req, res) => {
   try {
-    const updatePembeli = await Toko.findByIdAndUpdate(
+    const updatePembeli = await User.findByIdAndUpdate(
       req.params.iduser,
       {
         $set: req.body,

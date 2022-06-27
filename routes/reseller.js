@@ -66,6 +66,7 @@ router.post("/restock", verifyTokenAndReseller, async (req, res) => {
   try {
     const newRequest = new Restock({
       id_toko: req.tokonya._id,
+      tanggal: "",
       product: req.body.product,
     });
     const savedRestock = await newRequest.save();
