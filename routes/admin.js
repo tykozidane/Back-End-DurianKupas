@@ -248,9 +248,7 @@ router.get("/datapembeli", verifyTokenAndAdmin, async (req, res) => {
 ////Data Satu Pembeli
 router.get("/datapembeli/:userId", verifyTokenAndAdmin, async (req, res) => {
   try {
-    const datapembeli = await User.find({ _id: req.params.userId, role: "user" }).sort({
-      createdAt: -1,
-    });
+    const datapembeli = await User.findOne({ _id: req.params.userId, role: "user" });
     return res.status(200).json(datapembeli);
   } catch (err) {
     return res.status(500).json(err);
