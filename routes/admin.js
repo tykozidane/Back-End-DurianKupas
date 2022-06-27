@@ -183,6 +183,14 @@ router.get("/datareseller", verifyTokenAndAdmin, async (req, res) => {
   });
 });
 
+//Data Satu Reseller
+router.get("/datareseller/:tokoId", verifyTokenAndAdmin, async (req, res) => {
+  const tokonya = await Toko.findById(req.params.tokoId);
+  const resellernya = await User.findById(tokonya.id_user);
+  return res.status(200).json({ tokonya, resellernya });
+  
+});
+
 //Update Toko
 router.put("/updatetoko/:idtoko", verifyTokenAndAdmin, async (req, res) => {
   try {
@@ -229,6 +237,16 @@ router.delete("/deletetoko/:idtoko", verifyTokenAndAdmin, async (req, res) => {
 router.get("/datapembeli", verifyTokenAndAdmin, async (req, res) => {
   try {
     const datapembeli = await User.find({ role: "user" }).sort({ createdAt: -1 });
+    return res.status(200).json(datapembeli);
+  } catch (err) {
+    return res.status(500).json(err);
+  }
+});
+
+////Data Satu Pembeli
+router.get("/datapembeli/:userId", verifyTokenAndAdmin, async (req, res) => {
+  try {
+    const datapembeli = await User.find({ _id: req.params.userId, role: "user" }).sort({ createdAt: -1 });
     return res.status(200).json(datapembeli);
   } catch (err) {
     return res.status(500).json(err);
@@ -414,6 +432,11 @@ router.get("/dataproduct/:productId", verifyTokenAndAdmin, async (req, res) => {
 
 //Update Product
 router.put("/updateproduct/:idproduct", verifyTokenAndAdmin, async (req, res) => {
+  const image = require("image");
+  if (image.existsSync(path)) { return res.status(200).json("ga ada gambar")
+} else {
+  return res.status(200).json("gambar ada")
+}
   try {
     const updateProduct = await Product.findByIdAndUpdate(
       req.params.idproduct,
