@@ -91,7 +91,7 @@ router.post("/tarikuang", verifyTokenAndReseller, async (req, res) => {
   if (!req.body.jumlah) return res.status(500).json("Berapa jumlah yang ingin ditarik?");
   try {
     if (req.tokonya.saldo < req.body.jumlah) {
-      return res.status(200).json("Saldo Anda Kurang dari jumlah Permintaan!!!");
+      return res.status(500).json("Saldo Anda Kurang dari jumlah Permintaan!!!");
     } else {
       const newTarikuang = new Tarikuang({
         id_toko: req.tokonya._id,
