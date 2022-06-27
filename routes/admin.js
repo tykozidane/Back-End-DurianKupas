@@ -304,7 +304,9 @@ const updatestoknya = async (req, res, next) => {
     var jumlah = 0;
     for (let j = 0; j < tokonya.stock.length; j++) {
       if (tokonya.stock[j].product == arrayproduk[i].product) {
-        jumlah = tokonya.stock[j].jumlah + arrayproduk[i].jumlah;
+        var stok1 = tokonya.stock[j].jumlah;
+        var stok2 = arrayproduk[i].jumlah;
+        jumlah = parseInt(stok1)+parseInt(stok2);
 
         const update = await Toko.updateOne(
           { _id: tokonya._id, "stock.product": tokonya.stock[j].product },
