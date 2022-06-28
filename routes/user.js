@@ -16,9 +16,11 @@ const req = require("express/lib/request");
 const Region = require("../models/Region");
 const cloudinary = require("../utils/cloudinary");
 const upload = require("../utils/multer");
+const { hitungRating } = require("./counting");
 //Testing
-router.get("/", async (req, res) => {
+router.get("/", hitungRating, async (req, res) => {
   const products = await Product.find();
+
   return res.status(200).json(products);
 });
 

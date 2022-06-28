@@ -36,8 +36,12 @@ const hitungRating = async (req, res, next) => {
   for (let i = 0; i < dataRating.length; i++) {
     rat = parseInt(rat) + parseInt(dataRating[i].rating);
   }
+  var rating = rat / dataRating.length;
+  req.rating = rating;
+  next();
 }
 
 module.exports = {
   countTransactionReseller,
+  hitungRating
 };
