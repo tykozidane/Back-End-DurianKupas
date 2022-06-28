@@ -92,7 +92,7 @@ const addRegion = async (req, res, next) => {
 //Add Toko
 router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
   const usernya = await User.findOne({ username: req.body.username });
-  if (!usernya._id) return res.status(200).json("Username Tidak Ditemukan");
+  if (!usernya._id) return res.status(500).json("Username Tidak Ditemukan");
   const newToko = new Toko({
     namatoko: req.body.namatoko,
     id_user: usernya._id,

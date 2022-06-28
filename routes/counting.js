@@ -2,6 +2,7 @@ const Toko = require("../models/Toko");
 const User = require("../models/Users");
 const Product = require("../models/Products");
 const Transaksi = require("../models/Transaksi");
+const Review = require("../models/Reviews");
 const { verifyTokenAndReseller } = require("./verifyToken");
 
 const cekTransaksi = async (req, res, next) => {
@@ -27,6 +28,15 @@ const countTransactionReseller = (req, res, next) => {
     });
   });
 };
+
+//Hitung Rating
+const hitungRating = async (req, res, next) => {
+  const dataRating = await Review.find();
+  var rat = 0;
+  for (let i = 0; i < dataRating.length; i++) {
+    rat = parseInt(rat) + parseInt(dataRating[i].rating);
+  }
+}
 
 module.exports = {
   countTransactionReseller,
