@@ -20,8 +20,7 @@ const { hitungRating } = require("./counting");
 //Testing
 router.get("/", hitungRating, async (req, res) => {
   const products = await Product.find();
-  const rating = req.rating;
-  return res.status(200).json({rating, products});
+  return res.status(200).json(products);
 });
 
 router.post("/", upload.single("image"), async (req, res) => {
