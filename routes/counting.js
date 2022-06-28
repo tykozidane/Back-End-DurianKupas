@@ -37,7 +37,8 @@ const hitungRating = async (req, res, next) => {
     rat = parseInt(rat) + parseInt(dataRating[i].rating);
   }
   var rating = rat / dataRating.length;
-  req.rating = rating;
+  var newRating = Math.round(rating);
+  req.rating = newRating;
   next();
 }
 

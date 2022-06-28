@@ -10,6 +10,8 @@ const { required } = require("nodemon/lib/config");
 const Region = require("../models/Region");
 const cloudinary = require("../utils/cloudinary");
 const upload = require("../utils/multer");
+const { hitungRating } = require("./counting");
+const Review = require("../models/Reviews");
 // const { addRegion } = require("./filterToko");
 
 //Fungsi Upload Image
@@ -477,6 +479,17 @@ router.delete("/deleteproduct/:idproduct", verifyTokenAndAdmin, async (req, res)
     // await Product.findByIdAndDelete(req.params.idproduct);
     await Product.deleteOne({ _id: req.params.idproduct });
     return res.status(200).json("Product Has Been Deleted . . .");
+  } catch (err) {
+    return res.status(500).json(err);
+  }
+});
+
+//Get Review
+router.get("/review",hitungRating, verifyTokenAndAdmin, async (req, res) => {
+  try {
+    const review = await Review.find();
+    const rating = req.rating;
+    return res.status(200).json({rating, review})
   } catch (err) {
     return res.status(500).json(err);
   }
