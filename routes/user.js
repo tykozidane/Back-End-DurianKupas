@@ -80,10 +80,13 @@ router.put("/update/:userId", verifyTokenAndAuthorization, async (req, res) => {
 router.post("/pesan", verifyTokenAndPembeli, async (req, res) => {
   if (!req.body.pesanan) return res.status(500).json("Produknya Apa Saja Nih?");
   try {
+    var utc = new Date();
+    utc.setHours(utc.getHours() + 7);
     const newTransaksi = new Transaksi({
       id_user: req.user.id,
       username: req.pembeli.username,
       pesanan: req.body.pesanan,
+      createdAt: utc,
     });
     const savedTransaksi = await newTransaksi.save();
     return res.status(200).json(savedTransaksi);

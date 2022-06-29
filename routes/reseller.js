@@ -27,8 +27,8 @@ router.get("/datapesanan", verifyTokenAndReseller, async (req, res) => {
   const tokonya = req.tokonya;
   const pesananLama = await Transaksi.find({ id_toko: tokonya._id }).nor({
     status: "Menunggu Pengiriman",
-  });
-  Transaksi.find({ id_toko: tokonya._id, status: "Menunggu Pengiriman" }, (err, pesananBaru) => {
+  }).sort({ createdAt: -1 });
+  Transaksi.find({ id_toko: tokonya._id, status: "Menunggu Pengiriman" }).sort({ createdAt: -1 }).exec((err, pesananBaru) => {
     if (err) return res.status(403).json(err);
     return res.status(200).json({ pesananBaru, pesananLama });
   });
@@ -53,7 +53,7 @@ router.put("/dikirim/:idtransaksi", verifyTokenAndReseller, async (req, res) => 
 //Data Restock Reseller
 router.get("/datarestock", verifyTokenAndReseller, async (req, res) => {
   try {
-    const dataRestock = await Restock.find({ id_toko: req.tokonya._id });
+    const dataRestock = await Restock.find({ id_toko: req.tokonya._id }).sort({ createdAt: -1 });
     return res.status(200).json(dataRestock);
   } catch (err) {
     return res.status(500).json(err);
@@ -64,10 +64,13 @@ router.get("/datarestock", verifyTokenAndReseller, async (req, res) => {
 router.post("/restock", verifyTokenAndReseller, async (req, res) => {
   if (!req.body.product) return res.status(500).json("Product apa saja yang ingin di restock?");
   try {
+    var utc = new Date();
+    utc.setHours( utc.getHours() + 7);
     const newRequest = new Restock({
       id_toko: req.tokonya._id,
       tanggal: "",
       product: req.body.product,
+      createdAt: utc,
     });
     const savedRestock = await newRequest.save();
     return res.status(200).json(savedRestock);
@@ -79,7 +82,7 @@ router.post("/restock", verifyTokenAndReseller, async (req, res) => {
 //Data Tarik Uang
 router.get("/datatarikuang", verifyTokenAndReseller, async (req, res) => {
   try {
-    const datatarikuang = await Tarikuang.find({ id_toko: req.tokonya._id });
+    const datatarikuang = await Tarikuang.find({ id_toko: req.tokonya._id }).sort({ createdAt: -1 });
     return res.status(200).json(datatarikuang);
   } catch (err) {
     return res.status(500).json(err);
@@ -93,9 +96,12 @@ router.post("/tarikuang", verifyTokenAndReseller, async (req, res) => {
     if (req.tokonya.saldo < req.body.jumlah) {
       return res.status(500).json("Saldo Anda Kurang dari jumlah Permintaan!!!");
     } else {
+      var utc = new Date();
+      utc.setHours( utc.getHours() + 7);
       const newTarikuang = new Tarikuang({
         id_toko: req.tokonya._id,
         jumlah: req.body.jumlah,
+        createdAt: utc,
       });
       const savedTarikuang = await newTarikuang.save();
       return res.status(200).json(savedTarikuang);

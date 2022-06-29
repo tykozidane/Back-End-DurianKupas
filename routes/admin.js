@@ -14,6 +14,13 @@ const { hitungRating } = require("./counting");
 const Review = require("../models/Reviews");
 // const { addRegion } = require("./filterToko");
 
+//testing
+router.get("/", async (req, res) => {
+  var utc = new Date();
+utc.setHours( utc.getHours() + 7);
+  return res.status(200).json(utc);
+})
+
 //Fungsi Upload Image
 const uploadimage = async (req, res, next) => {
   try {
@@ -132,7 +139,7 @@ router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
 router.get("/datapesanan", verifyTokenAndAdmin, async (req, res) => {
   try {
     const datapesanan = await Transaksi.find().nor({ status: "Verifikasi Pembayaran" });
-    Transaksi.find({ status: "Verifikasi Pembayaran" }, (err, verifikasi) => {
+    Transaksi.find({ status: "Verifikasi Pembayaran" }).sort({ createdAt: -1 }).exec((err, verifikasi) => {
       if (err) return res.status(500).json(err);
       return res.status(200).json({ datapesanan, verifikasi });
     });
@@ -327,10 +334,12 @@ const updatestoknya = async (req, res, next) => {
 //Pengiriman Restock
 router.put("/restockdikirim/:idrestock", verifyTokenAndAdmin, async (req, res) => {
   try {
+    var utc = new Date();
+utc.setHours( utc.getHours() + 7);
     const updateRestock = await Restock.findByIdAndUpdate(
       req.params.idrestock,
       {
-        tanggal: Date.now(),
+        tanggal: utc,
         status: "Dikirim",
       },
       { new: true }
@@ -379,12 +388,14 @@ router.put(
   upload.single("image"),
   async (req, res) => {
     try {
+      var utc = new Date();
+utc.setHours( utc.getHours() + 7);
       uploadimage(req, res, () => {
         const link = req.imageupload;
         Tarikuang.findByIdAndUpdate(
           req.params.idtarikuang,
           {
-            tanggal: Date.now(),
+            tanggal: utc,
             bukti: link.secure_url,
             status: "Berhasil",
           },
@@ -487,7 +498,7 @@ router.delete("/deleteproduct/:idproduct", verifyTokenAndAdmin, async (req, res)
 //Get Review
 router.get("/review",hitungRating, verifyTokenAndAdmin, async (req, res) => {
   try {
-    const review = await Review.find();
+    const review = await Review.find().sort({ createdAt: -1 });
     const rating = req.rating;
     return res.status(200).json({rating, review})
   } catch (err) {

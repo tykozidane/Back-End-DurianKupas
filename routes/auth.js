@@ -21,12 +21,15 @@ router.post("/register", async (req, res) => {
   const cekEmail = await User.findOne({ email: req.body.email });
   if (cekEmail) return res.status(500).json("Email Sudah Digunakan.");
   if (req.body.password.length < 8) return res.status(500).json("Password Kurang dari 8 karakter!!!");
+  var utc = new Date();
+utc.setHours( utc.getHours() + 7);
   const newUser = new User({
     username: req.body.username,
     email: req.body.email,
     password: CryptoJS.AES.encrypt(req.body.password, process.env.PASS_SEC),
     phone: req.body.phone,
     tanggallahir: "",
+    createdAt: utc,
   });
   try {
     const savedUser = await newUser.save();
