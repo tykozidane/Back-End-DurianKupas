@@ -102,6 +102,8 @@ const addRegion = async (req, res, next) => {
 router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
   const usernya = await User.findOne({ username: req.body.username });
   if (!usernya) return res.status(500).json("Username Tidak Ditemukan");
+  var utc = new Date();
+  utc.setHours( utc.getHours() + 7);
   const newToko = new Toko({
     namatoko: req.body.namatoko,
     id_user: usernya._id,
@@ -111,6 +113,7 @@ router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
     kota: req.body.kota,
     stock: req.body.stock,
     saldo: 0,
+    createdAt: utc,
   });
   try {
     addRegion(req, res, () => {
@@ -138,7 +141,7 @@ router.post("/addtoko", verifyTokenAndAdmin, async (req, res) => {
 //Data Pesanan
 router.get("/datapesanan", verifyTokenAndAdmin, async (req, res) => {
   try {
-    const datapesanan = await Transaksi.find().nor({ status: "Verifikasi Pembayaran" });
+    const datapesanan = await Transaksi.find().nor({ status: "Verifikasi Pembayaran" }).sort({ createdAt: -1 });
     Transaksi.find({ status: "Verifikasi Pembayaran" }).sort({ createdAt: -1 }).exec((err, verifikasi) => {
       if (err) return res.status(500).json(err);
       return res.status(200).json({ datapesanan, verifikasi });
@@ -293,7 +296,7 @@ router.delete("/deletePembeli/:iduser", verifyTokenAndAdmin, async (req, res) =>
 //Data Restock
 router.get("/datarestock", verifyTokenAndAdmin, async (req, res) => {
   try {
-    const dataRestock = await Restock.find({ status: "Pending" });
+    const dataRestock = await Restock.find({ status: "Pending" }).sort({ createdAt: -1 });
     Restock.find({ status: "Dikirim" })
       .sort({ createdAt: -1 })
       .exec((err, doneRestock) => {
@@ -361,8 +364,8 @@ utc.setHours( utc.getHours() + 7);
 //Data Tarik Uang
 router.get("/datatarikuang", verifyTokenAndAdmin, async (req, res) => {
   try {
-    const datatarikuang = await Tarikuang.find({ status: "Pending" });
-    Tarikuang.find({ status: "Berhasil" }, (err, donetarikuang) => {
+    const datatarikuang = await Tarikuang.find({ status: "Pending" }).sort({ createdAt: -1 });
+    Tarikuang.find({ status: "Berhasil" }).sort({ createdAt: -1 }).exec((err, donetarikuang) => {
       if (err) return res.status(500).json(err);
       return res.status(200).json({ datatarikuang, donetarikuang });
     });
@@ -430,7 +433,7 @@ utc.setHours( utc.getHours() + 7);
 //Data Product
 router.get("/dataproduct", verifyTokenAndAdmin, async (req, res) => {
   try {
-    const product = await Product.find();
+    const product = await Product.find().sort({ createdAt: -1 });
     return res.status(200).json(product);
   } catch (err) {
     return res.status(500).json(err);
