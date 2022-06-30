@@ -92,7 +92,7 @@ router.get("/datatarikuang", verifyTokenAndReseller, async (req, res) => {
 //Request Tarik Uang
 router.post("/tarikuang", verifyTokenAndReseller, async (req, res) => {
   if (!req.body.jumlah) return res.status(500).json("Berapa jumlah yang ingin ditarik?");
-  if (req.body.jumlah < 20000) return res.status(500).json("Jumlah tidak bisa Kurang dari 20.000")
+  if (req.body.jumlah < 50000) return res.status(500).json("Jumlah tidak bisa Kurang dari 20.000")
   try {
     if (req.tokonya.saldo < req.body.jumlah) {
       return res.status(500).json("Saldo Anda Kurang dari jumlah Permintaan!!!");
